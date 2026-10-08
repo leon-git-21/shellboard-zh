@@ -1,0 +1,2 @@
+.app-tooltip { position: fixed; z-index: 20000; max-width: 260px; padding: 7px 10px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--bg-pop); color: var(--fg); box-shadow: var(--shadow-pop); font: 12px/1.5 var(--font-ui); pointer-events: none; transform: translate(-50%, -100%); overflow-wrap: anywhere; }
+.app-tooltip.below { transform: translate(-50%, 0); }

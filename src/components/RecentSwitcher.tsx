@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useAppStore } from "../store/appStore";
 import { collectLeaves } from "../utils/mosaic";
 import { cwdLabel } from "../utils/path";
@@ -7,6 +8,7 @@ import "./RecentSwitcher.css";
 // only while a switcher session is active (store.switcher non-null). The active
 // row tracks store.switcher.index; commit/cancel happen via App's key handlers.
 export function RecentSwitcher() {
+  const { t } = useI18n();
   const switcher = useAppStore((s) => s.switcher);
   const tabs = useAppStore((s) => s.tabs);
   const projects = useAppStore((s) => s.projects);
@@ -34,8 +36,8 @@ export function RecentSwitcher() {
 
   return (
     <div className="switcher-backdrop">
-      <div className="switcher" role="listbox" aria-label="Recent terminals">
-        <div className="switcher__title">Recent terminals</div>
+      <div className="switcher" role="listbox" aria-label={t("Recent terminals")}>
+        <div className="switcher__title">{t("Recent terminals")}</div>
         <ul className="switcher__list">
           {rows.map((r) => (
             <li
@@ -61,8 +63,7 @@ export function RecentSwitcher() {
           ))}
         </ul>
         <div className="switcher__hint">
-          Hold · tap to cycle · release to switch
-        </div>
+          {t("Hold · tap to cycle · release to switch")}</div>
       </div>
     </div>
   );

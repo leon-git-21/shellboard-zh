@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef } from "react";
 import { Command } from "cmdk";
 import { openPath } from "@tauri-apps/plugin-opener";
@@ -30,6 +31,7 @@ export function CommandPalette({
   onOpenGlobalSearch,
   onOpenShortcuts,
 }: CommandPaletteProps) {
+  const { t } = useI18n();
   const projects = useAppStore((s) => s.projects);
   const groups = useAppStore((s) => s.groups);
   const activeProjectId = useAppStore((s) => s.activeProjectId);
@@ -106,26 +108,25 @@ export function CommandPalette({
         className="palette"
         role="dialog"
         aria-modal="true"
-        aria-label="Command palette"
+        aria-label={t("Command palette")}
       >
-        <Command label="Command palette" loop>
+        <Command label={t("Command palette")} loop>
           <div className="palette__header">
             <Search size={15} className="palette__icon" />
             <Command.Input
               autoFocus
-              placeholder="Type a command…"
+              placeholder={t("Type a command…")}
               className="palette__input"
             />
-            <span className="palette__esc">esc</span>
+            <span className="palette__esc">{t("esc")}</span>
           </div>
           <Command.List className="palette__list">
             <Command.Empty className="palette__empty">
-              No matching commands.
-            </Command.Empty>
+              {t("No matching commands.")}</Command.Empty>
 
             {recent.length > 0 && (
               <Command.Group
-                heading="Recent terminals"
+                heading={t("Recent terminals")}
                 className="palette__group"
               >
                 {recent.map((r) => (
@@ -153,14 +154,13 @@ export function CommandPalette({
               </Command.Group>
             )}
 
-            <Command.Group heading="Projects" className="palette__group">
+            <Command.Group heading={t("Projects")} className="palette__group">
               <Command.Item
                 value="add new project"
                 onSelect={run(() => onAddProject())}
                 className="palette__item"
               >
-                Add new project…
-              </Command.Item>
+                {t("Add new project…")}</Command.Item>
               {activeProject && (
                 <>
                   <Command.Item
@@ -170,8 +170,7 @@ export function CommandPalette({
                     )}
                     className="palette__item"
                   >
-                    Rename current project
-                  </Command.Item>
+                    {t("Rename current project")}</Command.Item>
                   <Command.Item
                     value={`open in finder explorer ${activeProject.name} ${activeProject.path}`}
                     onSelect={run(async () => {
@@ -183,8 +182,7 @@ export function CommandPalette({
                     })}
                     className="palette__item"
                   >
-                    Open current project in file explorer
-                  </Command.Item>
+                    {t("Open current project in file explorer")}</Command.Item>
                 </>
               )}
               {projects.map((p) => (
@@ -199,16 +197,16 @@ export function CommandPalette({
                     style={{ background: p.color }}
                   />
                   <span className="palette__label">
-                    Switch to {p.name}
+                    {t("Switch to")}{p.name}
                   </span>
                   {p.id === activeProjectId && (
-                    <span className="palette__hint">active</span>
+                    <span className="palette__hint">{t("active")}</span>
                   )}
                 </Command.Item>
               ))}
             </Command.Group>
 
-            <Command.Group heading="Snippets" className="palette__group">
+            <Command.Group heading={t("Snippets")} className="palette__group">
               {activeProject && (
                 <Command.Item
                   value={`snippet manage edit add new snippets ${activeProject.name}`}
@@ -217,7 +215,7 @@ export function CommandPalette({
                   )}
                   className="palette__item"
                 >
-                  Manage snippets for {activeProject.name}…
+                  {t("Manage snippets for")}{activeProject.name}…
                 </Command.Item>
               )}
               {projects.flatMap((p) =>
@@ -240,7 +238,7 @@ export function CommandPalette({
                 )}
             </Command.Group>
 
-            <Command.Group heading="Groups" className="palette__group">
+            <Command.Group heading={t("Groups")} className="palette__group">
               <Command.Item
                 value="new group"
                 onSelect={run(async () => {
@@ -249,8 +247,7 @@ export function CommandPalette({
                 })}
                 className="palette__item"
               >
-                New group…
-              </Command.Item>
+                {t("New group…")}</Command.Item>
               {groups.map((g) => (
                 <Command.Item
                   key={`rename-group-${g.id}`}
@@ -258,7 +255,7 @@ export function CommandPalette({
                   onSelect={run(() => store.requestGroupRename(g.id))}
                   className="palette__item"
                 >
-                  Rename group: {g.name}
+                  {t("Rename group:")}{g.name}
                 </Command.Item>
               ))}
               {groups.map((g) => (
@@ -268,19 +265,18 @@ export function CommandPalette({
                   onSelect={run(() => store.removeGroup(g.id))}
                   className="palette__item"
                 >
-                  Remove group: {g.name}
+                  {t("Remove group:")}{g.name}
                 </Command.Item>
               ))}
             </Command.Group>
 
-            <Command.Group heading="Tabs" className="palette__group">
+            <Command.Group heading={t("Tabs")} className="palette__group">
               <Command.Item
                 value="new tab"
                 onSelect={run(() => void store.addTab())}
                 className="palette__item"
               >
-                New tab
-                <span className="palette__hint">⌘T</span>
+                {t("New tab")}<span className="palette__hint">⌘T</span>
               </Command.Item>
               {activeTabId && (
                 <>
@@ -289,23 +285,20 @@ export function CommandPalette({
                     onSelect={run(() => store.requestTabRename(activeTabId))}
                     className="palette__item"
                   >
-                    Rename current tab
-                  </Command.Item>
+                    {t("Rename current tab")}</Command.Item>
                   <Command.Item
                     value="broadcast input toggle fanout"
                     onSelect={run(() => store.toggleBroadcast(activeTabId))}
                     className="palette__item"
                   >
                     {activeTab?.broadcastInput ? "Disable" : "Enable"}{" "}
-                    broadcast input
-                  </Command.Item>
+                    {t("broadcast input")}</Command.Item>
                   <Command.Item
                     value="close tab"
                     onSelect={run(() => store.requestCloseTab(activeTabId))}
                     className="palette__item"
                   >
-                    Close tab
-                    <span className="palette__hint">⌘W</span>
+                    {t("Close tab")}<span className="palette__hint">⌘W</span>
                   </Command.Item>
                 </>
               )}
@@ -314,107 +307,97 @@ export function CommandPalette({
                 onSelect={run(() => store.closeActivePanel())}
                 className="palette__item"
               >
-                Close panel
-                <span className="palette__hint">⌘⇧W</span>
+                {t("Close panel")}<span className="palette__hint">⌘⇧W</span>
               </Command.Item>
               <Command.Item
                 value="next tab"
                 onSelect={run(() => store.nextTab())}
                 className="palette__item"
               >
-                Next tab
-                <span className="palette__hint">⌃Tab</span>
+                {t("Next tab")}<span className="palette__hint">{t("⌃Tab")}</span>
               </Command.Item>
               <Command.Item
                 value="previous tab"
                 onSelect={run(() => store.prevTab())}
                 className="palette__item"
               >
-                Previous tab
-                <span className="palette__hint">⌃⇧Tab</span>
+                {t("Previous tab")}<span className="palette__hint">{t("⌃⇧Tab")}</span>
               </Command.Item>
             </Command.Group>
 
-            <Command.Group heading="Split" className="palette__group">
+            <Command.Group heading={t("Split")} className="palette__group">
               <Command.Item
                 value="split right vertical"
                 onSelect={run(() => store.splitActiveTerminal("row"))}
                 className="palette__item"
               >
-                Split right
-                <span className="palette__hint">⌘D</span>
+                {t("Split right")}<span className="palette__hint">⌘D</span>
               </Command.Item>
               <Command.Item
                 value="split down horizontal"
                 onSelect={run(() => store.splitActiveTerminal("column"))}
                 className="palette__item"
               >
-                Split down
-                <span className="palette__hint">⌘⇧D</span>
+                {t("Split down")}<span className="palette__hint">⌘⇧D</span>
               </Command.Item>
             </Command.Group>
 
-            <Command.Group heading="Focus" className="palette__group">
+            <Command.Group heading={t("Focus")} className="palette__group">
               <Command.Item
                 value="focus left"
                 onSelect={run(() => store.moveFocus("left"))}
                 className="palette__item"
               >
-                Focus left panel
-              </Command.Item>
+                {t("Focus left panel")}</Command.Item>
               <Command.Item
                 value="focus right"
                 onSelect={run(() => store.moveFocus("right"))}
                 className="palette__item"
               >
-                Focus right panel
-              </Command.Item>
+                {t("Focus right panel")}</Command.Item>
               <Command.Item
                 value="focus up"
                 onSelect={run(() => store.moveFocus("up"))}
                 className="palette__item"
               >
-                Focus up panel
-              </Command.Item>
+                {t("Focus up panel")}</Command.Item>
               <Command.Item
                 value="focus down"
                 onSelect={run(() => store.moveFocus("down"))}
                 className="palette__item"
               >
-                Focus down panel
-              </Command.Item>
+                {t("Focus down panel")}</Command.Item>
             </Command.Group>
 
-            <Command.Group heading="Theme" className="palette__group">
-              {THEMES.map((t) => (
+            <Command.Group heading={t("Theme")} className="palette__group">
+              {THEMES.map((preset) => (
                 <Command.Item
-                  key={`theme-${t.id}`}
-                  value={`theme ${t.name}`}
+                  key={`theme-${preset.id}`}
+                  value={`theme ${preset.name}`}
                   onSelect={run(() =>
-                    store.updateSettings({ terminalTheme: t.id }),
+                    store.updateSettings({ terminalTheme: preset.id }),
                   )}
                   className="palette__item"
                 >
                   <span
                     className="palette__dot"
-                    style={{ background: t.theme.background ?? "#1e1e1e" }}
+                    style={{ background: preset.theme.background ?? "#1e1e1e" }}
                   />
-                  <span className="palette__label">Theme: {t.name}</span>
-                  {t.id === currentTheme && (
-                    <span className="palette__hint">current</span>
+                  <span className="palette__label">{t("Theme:")} {preset.name}</span>
+                  {preset.id === currentTheme && (
+                    <span className="palette__hint">{t("current")}</span>
                   )}
                 </Command.Item>
               ))}
             </Command.Group>
 
-            <Command.Group heading="Settings" className="palette__group">
+            <Command.Group heading={t("Settings")} className="palette__group">
               <Command.Item
                 value="open settings preferences"
                 onSelect={run(() => onOpenSettings())}
                 className="palette__item"
               >
-                Open settings…
-                <span className="palette__hint">⌘,</span>
+                {t("Open settings…")}<span className="palette__hint">⌘,</span>
               </Command.Item>
               <Command.Item
                 value="toggle cwd tracking osc7"
@@ -423,46 +406,41 @@ export function CommandPalette({
                 )}
                 className="palette__item"
               >
-                {autoCwd ? "Disable" : "Enable"} directory tracking
-              </Command.Item>
+                {autoCwd ? "Disable" : "Enable"} {t("directory tracking")}</Command.Item>
               <Command.Item
                 value="toggle sidebar"
                 onSelect={run(() => store.toggleSidebar())}
                 className="palette__item"
               >
-                {sidebarVisible ? "Hide" : "Show"} sidebar
-                <span className="palette__hint">⌘B</span>
+                {sidebarVisible ? "Hide" : "Show"} {t("sidebar")}<span className="palette__hint">⌘B</span>
               </Command.Item>
               <Command.Item
                 value="global search buffers"
                 onSelect={run(() => onOpenGlobalSearch())}
                 className="palette__item"
               >
-                Search across all terminals…
-                <span className="palette__hint">⌘⇧F</span>
+                {t("Search across all terminals…")}<span className="palette__hint">⌘⇧F</span>
               </Command.Item>
               <Command.Item
                 value="keyboard shortcuts help cheat sheet"
                 onSelect={run(() => onOpenShortcuts())}
                 className="palette__item"
               >
-                Keyboard shortcuts
-                <span className="palette__hint">?</span>
+                {t("Keyboard shortcuts")}<span className="palette__hint">?</span>
               </Command.Item>
               <Command.Item
                 value="about shellboard info version"
                 onSelect={run(() => onOpenAbout())}
                 className="palette__item"
               >
-                About Shellboard
-              </Command.Item>
+                {t("About Shellboard")}</Command.Item>
             </Command.Group>
           </Command.List>
           <div className="palette__footer">
-            <span>↑ ↓ navigate</span>
-            <span>↵ select</span>
+            <span>{t("↑ ↓ navigate")}</span>
+            <span>{t("↵ select")}</span>
             <span className="palette__footer-spacer" />
-            <span>esc close</span>
+            <span>{t("esc close")}</span>
           </div>
         </Command>
       </div>

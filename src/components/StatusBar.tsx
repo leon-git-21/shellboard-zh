@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { getVersion } from "@tauri-apps/api/app";
@@ -17,6 +18,7 @@ type StatusBarProps = {
 };
 
 export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
+  const { t } = useI18n();
   const activeTabId = useAppStore((s) => s.activeTabId);
   const tabs = useAppStore((s) => s.tabs);
   const terminals = useAppStore((s) => s.terminals);
@@ -86,12 +88,12 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
     <div className="status-bar">
       {hasTerminal && (
         <>
-          <span className="status-bar__segment" title={shellName}>
+          <span className="status-bar__segment" data-tooltip={shellName}>
             <TerminalIcon size={11} className="status-bar__icon" />
             <span>{shellName}</span>
           </span>
           <span className="status-bar__sep">·</span>
-          <span className="status-bar__segment status-bar__cwd" title={cwd}>
+          <span className="status-bar__segment status-bar__cwd" data-tooltip={cwd}>
             <Folder size={11} className="status-bar__icon" />
             <span>{abbreviatePath(cwd)}</span>
           </span>
@@ -100,7 +102,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
               <span className="status-bar__sep">·</span>
               <span
                 className="status-bar__segment status-bar__branch"
-                title={gitTooltip(gitStatus)}
+                data-tooltip={gitTooltip(gitStatus)}
               >
                 <GitBranch size={11} className="status-bar__icon" />
                 <span>{branchLabel}</span>
@@ -108,7 +110,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
               {gitStatus.staged > 0 && (
                 <span
                   className="status-bar__git status-bar__git--staged"
-                  title="Staged changes"
+                  data-tooltip={t("Staged changes")}
                 >
                   +{gitStatus.staged}
                 </span>
@@ -116,7 +118,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
               {gitStatus.modified > 0 && (
                 <span
                   className="status-bar__git status-bar__git--modified"
-                  title="Modified tracked files"
+                  data-tooltip={t("Modified tracked files")}
                 >
                   ●{gitStatus.modified}
                 </span>
@@ -124,7 +126,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
               {gitStatus.untracked > 0 && (
                 <span
                   className="status-bar__git status-bar__git--untracked"
-                  title="Untracked files"
+                  data-tooltip={t("Untracked files")}
                 >
                   ?{gitStatus.untracked}
                 </span>
@@ -132,7 +134,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
               {gitStatus.conflicts > 0 && (
                 <span
                   className="status-bar__git status-bar__git--conflicts"
-                  title="Conflicts"
+                  data-tooltip={t("Conflicts")}
                 >
                   ⚠{gitStatus.conflicts}
                 </span>
@@ -140,7 +142,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
               {gitStatus.ahead > 0 && (
                 <span
                   className="status-bar__git status-bar__git--ahead"
-                  title={`${gitStatus.ahead} ahead`}
+                  data-tooltip={`${gitStatus.ahead} ahead`}
                 >
                   <ArrowUp size={10} />
                   {gitStatus.ahead}
@@ -149,7 +151,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
               {gitStatus.behind > 0 && (
                 <span
                   className="status-bar__git status-bar__git--behind"
-                  title={`${gitStatus.behind} behind`}
+                  data-tooltip={`${gitStatus.behind} behind`}
                 >
                   <ArrowDown size={10} />
                   {gitStatus.behind}
@@ -164,7 +166,7 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
         <button
           type="button"
           className="status-bar__update"
-          title={`Update available: v${updateInfo.latest} (you're on v${updateInfo.current}). Click to open the release page.`}
+          data-tooltip={`Update available: v${updateInfo.latest} (you're on v${updateInfo.current}). Click to open the release page.`}
           aria-label={`Download Shellboard v${updateInfo.latest}`}
           onClick={() => {
             void openUrl(updateInfo.url).catch(() => {});
@@ -177,12 +179,12 @@ export function StatusBar({ onOpenShortcuts }: StatusBarProps) {
         type="button"
         className="status-bar__help"
         onClick={onOpenShortcuts}
-        title="Keyboard shortcuts (?)"
-        aria-label="Show keyboard shortcuts"
+        data-tooltip={t("Keyboard shortcuts (?)")}
+        aria-label={t("Show keyboard shortcuts")}
       >
         ?
       </button>
-      <span className="status-bar__version" title="Shellboard version">
+      <span className="status-bar__version" data-tooltip={t("Shellboard version")}>
         {version ? `v${version}` : ""}
       </span>
     </div>

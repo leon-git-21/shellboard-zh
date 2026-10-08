@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import "./GroupIconDialog.css";
 
@@ -16,6 +17,7 @@ export function GroupIconDialog({
   onSave,
   onClose,
 }: GroupIconDialogProps) {
+  const { t } = useI18n();
   const [value, setValue] = useState(initialIcon ?? "");
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -61,10 +63,10 @@ export function GroupIconDialog({
       <div
         className="group-icon-dialog"
         role="dialog"
-        aria-label="Group icon"
+        aria-label={t("Group icon")}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        <div className="group-icon-dialog__title">Icon for “{groupName}”</div>
+        <div className="group-icon-dialog__title">{t("Icon for “")}{groupName}”</div>
         <div className="group-icon-dialog__body">
           <div className="group-icon-dialog__preview" aria-hidden>
             {value || "·"}
@@ -74,7 +76,7 @@ export function GroupIconDialog({
             type="text"
             className="group-icon-dialog__input"
             value={value}
-            placeholder="Paste or type any emoji…"
+            placeholder={t("Paste or type any emoji…")}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -90,23 +92,20 @@ export function GroupIconDialog({
             className="group-icon-dialog__btn group-icon-dialog__btn--ghost"
             onClick={clear}
           >
-            Clear
-          </button>
+            {t("Clear")}</button>
           <span className="group-icon-dialog__spacer" />
           <button
             type="button"
             className="group-icon-dialog__btn group-icon-dialog__btn--ghost"
             onClick={onClose}
           >
-            Cancel
-          </button>
+            {t("Cancel")}</button>
           <button
             type="button"
             className="group-icon-dialog__btn group-icon-dialog__btn--primary"
             onClick={commit}
           >
-            Save
-          </button>
+            {t("Save")}</button>
         </div>
       </div>
     </div>

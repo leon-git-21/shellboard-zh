@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAppStore } from "../store/appStore";
 import { collectLeaves } from "../utils/mosaic";
@@ -76,6 +77,7 @@ function search(query: string): Hit[] {
 }
 
 export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
+  const { t } = useI18n();
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -163,14 +165,14 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
         className="gsearch"
         role="dialog"
         aria-modal="true"
-        aria-label="Search all terminals"
+        aria-label={t("Search all terminals")}
       >
         <div className="gsearch__header">
           <Search size={15} className="gsearch__icon" />
           <input
             autoFocus
             type="text"
-            placeholder="Search across all terminals…"
+            placeholder={t("Search across all terminals…")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -191,16 +193,15 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
             }}
             className="gsearch__input"
           />
-          <span className="gsearch__esc">esc</span>
+          <span className="gsearch__esc">{t("esc")}</span>
         </div>
         <div className="gsearch__list">
           {!query && (
             <div className="gsearch__hint">
-              Type to search buffers of all open terminals.
-            </div>
+              {t("Type to search buffers of all open terminals.")}</div>
           )}
           {query && query === debouncedQuery && hits.length === 0 && (
-            <div className="gsearch__hint">No matches.</div>
+            <div className="gsearch__hint">{t("No matches.")}</div>
           )}
           {hits.map((hit, i) => (
             <button
@@ -230,9 +231,9 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
           ))}
         </div>
         <div className="gsearch__footer">
-          <span>↵ jump to tab</span>
+          <span>{t("↵ jump to tab")}</span>
           <span className="gsearch__footer-spacer" />
-          <span>scrollback included</span>
+          <span>{t("scrollback included")}</span>
         </div>
       </div>
     </div>

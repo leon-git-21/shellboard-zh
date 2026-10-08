@@ -7,8 +7,9 @@ import {
 } from "../store/appStore";
 import { ProjectList } from "./ProjectList";
 import { randomProjectColor } from "./ColorPicker";
-import { Cog, Logo, Plus, Search, SidebarIcon } from "./icons";
+import { Cog, Plus, Search } from "./icons";
 import "./Sidebar.css";
+import { useI18n } from "../i18n";
 
 function basename(path: string): string {
   if (!path) return "project";
@@ -23,10 +24,10 @@ type SidebarProps = {
 };
 
 export function Sidebar({ onOpenSettings, onAddProject }: SidebarProps) {
+  const { t } = useI18n();
   const width = useAppStore((s) => s.sidebarWidth);
   const setSidebarWidth = useAppStore((s) => s.setSidebarWidth);
   const commitSidebarWidth = useAppStore((s) => s.commitSidebarWidth);
-  const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const addGroup = useAppStore((s) => s.addGroup);
   const addProject = useAppStore((s) => s.addProject);
   const requestGroupRename = useAppStore((s) => s.requestGroupRename);
@@ -38,7 +39,7 @@ export function Sidebar({ onOpenSettings, onAddProject }: SidebarProps) {
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   async function onAddGroup() {
-    const g = await addGroup("New group");
+    const g = await addGroup(t("New group"));
     requestGroupRename(g.id);
   }
 
@@ -111,21 +112,6 @@ export function Sidebar({ onOpenSettings, onAddProject }: SidebarProps) {
       className={`sidebar ${fileHover ? "sidebar--drop-target" : ""}`}
       style={{ width }}
     >
-      <div className="sidebar__header">
-        <Logo size={20} color="var(--accent-strong)" />
-        <span className="sidebar__title">ShellBoard</span>
-        <span className="sidebar__spacer" />
-        <button
-          type="button"
-          className="sidebar__icon-btn"
-          aria-label="Hide sidebar"
-          title="Hide sidebar"
-          onClick={() => void toggleSidebar()}
-        >
-          <SidebarIcon size={13} />
-        </button>
-      </div>
-
       <div className="sidebar__search">
         <div className="sidebar__search-field">
           <Search size={11} />
@@ -133,7 +119,8 @@ export function Sidebar({ onOpenSettings, onAddProject }: SidebarProps) {
             ref={searchRef}
             type="text"
             className="sidebar__search-input"
-            placeholder="Search projects…"
+            placeholder={t("Search projects…")}
+            aria-label={t("Search projects by name")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => {
@@ -152,10 +139,10 @@ export function Sidebar({ onOpenSettings, onAddProject }: SidebarProps) {
                 setSearch("");
                 searchRef.current?.focus();
               }}
-              aria-label="Clear search"
+              aria-label={t("Clear search")}
+              data-tooltip={t("Clear search")}
             >
-              esc
-            </button>
+              {t("esc")}</button>
           )}
         </div>
       </div>
@@ -169,16 +156,16 @@ export function Sidebar({ onOpenSettings, onAddProject }: SidebarProps) {
           type="button"
           className="sidebar__footer-btn sidebar__footer-btn--text"
           onClick={() => void onAddGroup()}
-          title="New group"
+          data-tooltip={t("New group")}
         >
           <Plus size={12} />
-          <span>New group…</span>
+          <span>{t("New group…")}</span>
         </button>
         <button
           type="button"
           className="sidebar__icon-btn"
-          aria-label="Add project"
-          title="Add project"
+          aria-label={t("Add project")}
+          data-tooltip={t("Add project")}
           onClick={() => onAddProject()}
         >
           <Plus size={13} />
@@ -186,8 +173,8 @@ export function Sidebar({ onOpenSettings, onAddProject }: SidebarProps) {
         <button
           type="button"
           className="sidebar__icon-btn"
-          aria-label="Settings"
-          title="Settings"
+          aria-label={t("Settings")}
+          data-tooltip={t("Settings")}
           onClick={onOpenSettings}
         >
           <Cog size={13} />

@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useState } from "react";
 import {
   bindingFromEvent,
@@ -24,6 +25,7 @@ export function ShortcutInput({
   onChange,
   onReset,
 }: ShortcutInputProps) {
+  const { t } = useI18n();
   const [capturing, setCapturing] = useState(false);
 
   // We can't rely on the button having keyboard focus: WKWebView (Tauri on
@@ -77,10 +79,10 @@ export function ShortcutInput({
           (conflict ? " is-conflict" : "")
         }
         onClick={() => setCapturing(true)}
-        title={conflict ? "This combo is used by another action" : undefined}
+        data-tooltip={conflict ? "This combo is used by another action" : undefined}
       >
         {capturing ? (
-          <span className="sb-shortcut__hint">Press keys…</span>
+          <span className="sb-shortcut__hint">{t("Press keys…")}</span>
         ) : (
           <kbd className="sb-shortcut__keys">{formatBinding(value)}</kbd>
         )}
@@ -90,8 +92,8 @@ export function ShortcutInput({
           type="button"
           className="sb-shortcut__reset"
           onClick={onReset}
-          title="Reset to default"
-          aria-label="Reset to default"
+          data-tooltip={t("Reset to default")}
+          aria-label={t("Reset to default")}
         >
           ↺
         </button>

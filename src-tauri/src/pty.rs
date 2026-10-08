@@ -15,6 +15,7 @@ pub struct PtySession {
     // session's life, so the running-apps poll can read it under the sessions
     // lock without contending with the reader/kill on the `child` mutex.
     shell_pid: Option<u32>,
+    output_ready: tokio::sync::watch::Sender<bool>,
 }
 
 impl Drop for PtySession {
@@ -33,6 +34,22 @@ impl Drop for PtySession {
 #[derive(Default)]
 pub struct PtyManager {
     sessions: Mutex<HashMap<String, PtySession>>,
+}
+
+impl PtyManager {
+    pub fn shutdown(&self) {
+        let sessions = match self.sessions.lock() {
+            Ok(mut sessions) => std::mem::take(&mut *sessions),
+            Err(error) => {
+                eprintln!("Could not close terminal sessions: {error}");
+                return;
+            }
+        };
+        // Closing the window alone does not close PTYs: reader tasks hold
+        // AppHandles and hence managed state. Drop the sessions explicitly,
+        // outside the map lock, to kill/reap shells and release those readers.
+        drop(sessions);
+    }
 }
 
 #[derive(Clone, Serialize)]
@@ -622,12 +639,14 @@ pub async fn spawn_pty(
     let id = uuid::Uuid::new_v4().to_string();
     let data_event = format!("pty://{id}/data");
     let exit_event = format!("pty://{id}/exit");
+    let (output_ready, mut output_ready_rx) = tokio::sync::watch::channel(false);
 
     let session = PtySession {
         writer: Arc::new(Mutex::new(writer)),
         master: Arc::new(Mutex::new(pair.master)),
         child: Arc::new(Mutex::new(child)),
         shell_pid,
+        output_ready,
     };
 
     state
@@ -641,10 +660,16 @@ pub async fn spawn_pty(
     // larger `data` events: under heavy output (builds, `cat` of a big file)
     // one event per 8 KB read floods the IPC bridge with per-event JSON
     // serialization the frontend can't keep up with.
-    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
+    // Keep startup output (including ConPTY's cursor-position query) until
+    // the renderer subscribes. Bound buffering and apply reader backpressure.
+    let (tx, mut rx) = tokio::sync::mpsc::channel::<Vec<u8>>(32);
 
     let app_for_emitter = app.clone();
     tauri::async_runtime::spawn(async move {
+        loop {
+            if *output_ready_rx.borrow_and_update() { break; }
+            if output_ready_rx.changed().await.is_err() { return; }
+        }
         // Cap a coalesced batch so a single event payload stays bounded.
         const MAX_BATCH: usize = 64 * 1024;
         // Carries 0–3 trailing bytes that look like the start of an
@@ -699,7 +724,7 @@ pub async fn spawn_pty(
             match reader.read(&mut buf) {
                 Ok(0) => break, // EOF, child exited
                 Ok(n) => {
-                    if tx.send(buf[..n].to_vec()).is_err() {
+                    if tx.blocking_send(buf[..n].to_vec()).is_err() {
                         break; // emitter gone (webview closed)
                     }
                 }
@@ -726,6 +751,13 @@ pub async fn spawn_pty(
     });
 
     Ok(id)
+}
+
+#[tauri::command]
+pub fn attach_pty(state: State<'_, PtyManager>, id: String) -> Result<(), String> {
+    let sessions = state.sessions.lock().map_err(|e| format!("lock poisoned: {e}"))?;
+    let session = sessions.get(&id).ok_or_else(|| "Terminal is already closed".to_string())?;
+    session.output_ready.send(true).map_err(|e| e.to_string())
 }
 
 #[tauri::command]

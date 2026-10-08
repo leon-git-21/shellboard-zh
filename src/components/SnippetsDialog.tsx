@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useState } from "react";
 import { useAppStore, type Snippet } from "../store/appStore";
 import { Modal } from "./Modal";
@@ -16,6 +17,7 @@ function uuid(): string {
 }
 
 export function SnippetsDialog({ projectId, onClose }: SnippetsDialogProps) {
+  const { t } = useI18n();
   const project = useAppStore((s) =>
     projectId ? s.projects.find((p) => p.id === projectId) : undefined,
   );
@@ -54,28 +56,26 @@ export function SnippetsDialog({ projectId, onClose }: SnippetsDialogProps) {
     <Modal
       open={!!projectId}
       onClose={onClose}
-      title={`Snippets · ${project.name}`}
+      title={`${t("Preset commands")} · ${project.name}`}
       maxWidth={540}
     >
       <div className="snippets">
         {drafts.length === 0 && (
           <div className="snippets__empty">
-            No snippets yet. Quick commands you run often — they paste into
-            the active terminal on click.
-          </div>
+            {t("No snippets yet. Quick commands you run often — they paste into the active terminal on click.")}</div>
         )}
         <div className="snippets__list">
           {drafts.map((s) => (
             <div key={s.id} className="snippets__row">
               <input
                 className="snippets__name"
-                placeholder="Name"
+                placeholder={t("Name")}
                 value={s.name}
                 onChange={(e) => updateSnippet(s.id, { name: e.target.value })}
               />
               <input
                 className="snippets__command"
-                placeholder="command --arg"
+                placeholder={t("command --arg")}
                 value={s.command}
                 onChange={(e) =>
                   updateSnippet(s.id, { command: e.target.value })
@@ -83,7 +83,7 @@ export function SnippetsDialog({ projectId, onClose }: SnippetsDialogProps) {
               />
               <label
                 className="snippets__toggle"
-                title="Send Enter after inserting, so the command runs immediately"
+                data-tooltip={t("Send Enter after inserting, so the command runs immediately")}
               >
                 <input
                   type="checkbox"
@@ -92,21 +92,19 @@ export function SnippetsDialog({ projectId, onClose }: SnippetsDialogProps) {
                     updateSnippet(s.id, { runAfterPaste: e.target.checked })
                   }
                 />
-                Run
-              </label>
+                {t("Run")}</label>
               <button
                 type="button"
                 className="snippets__run"
-                title="Run in active terminal"
+                data-tooltip={t("Run in active terminal")}
                 disabled={!s.command.trim()}
                 onClick={() => void runSnippet(project.id, s.id)}
               >
-                Run
-              </button>
+                {t("Run")}</button>
               <button
                 type="button"
                 className="snippets__remove"
-                title="Remove"
+                data-tooltip={t("Remove")}
                 onClick={() => removeSnippet(s.id)}
               >
                 ×
@@ -120,11 +118,9 @@ export function SnippetsDialog({ projectId, onClose }: SnippetsDialogProps) {
             className="snippets__add"
             onClick={addSnippet}
           >
-            + Add snippet
-          </button>
+            {t("+ Add snippet")}</button>
           <button type="button" className="snippets__done" onClick={onClose}>
-            Done
-          </button>
+            {t("Done")}</button>
         </div>
       </div>
     </Modal>

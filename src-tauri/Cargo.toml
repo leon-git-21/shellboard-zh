@@ -1,6 +1,6 @@
 [package]
-name = "shellboard"
-version = "2.4.1"
+name = "shellboard-local"
+version = "2.4.1-local.2"
 description = "Cross-platform terminal with per-project tabs & splits"
 authors = ["Petr Hložek <petr@petrhlozek.cz>"]
 edition = "2024"

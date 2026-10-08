@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useCallback, useState } from "react";
 import { Mosaic, type MosaicNode } from "react-mosaic-component";
 import "react-mosaic-component/react-mosaic-component.css";
@@ -167,12 +168,13 @@ function PanelHeader({
   leafId: string;
   focused: boolean;
 }) {
+  const { t } = useI18n();
   const show = useAppStore((s) => s.settings.showPanelHeader);
   const cwd = useAppStore((s) => s.terminals[leafId]?.cwd);
   const shellPath = useAppStore((s) => s.settings.shellPath);
   if (!show) return null;
   const shellName = (shellPath || "$SHELL")
-    .replace(/^.*\//, "")
+    .replace(/^.*[\\/]/, "")
     .replace(/^\$/, "") || "shell";
   return (
     <div
@@ -184,14 +186,14 @@ function PanelHeader({
       {cwd && (
         <>
           <span className="panel__header-sep">·</span>
-          <span className="panel__header-cwd" title={cwd}>
+          <span className="panel__header-cwd" data-tooltip={cwd}>
             {cwdLabel(cwd)}
           </span>
         </>
       )}
       <span className="panel__header-spacer" />
       <span className="panel__header-dot" />
-      <span className="panel__header-status">running</span>
+      <span className="panel__header-status">{t("running")}</span>
     </div>
   );
 }

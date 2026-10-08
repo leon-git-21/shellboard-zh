@@ -1,18 +1,36 @@
 .tab-bar {
   display: flex;
   align-items: center;
-  gap: 4px;
-  height: 40px;
+  gap: 8px;
+  height: 46px;
   padding: 0 12px;
   background: var(--bg-1);
   border-bottom: 1px solid var(--line);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: thin;
   user-select: none;
   flex-shrink: 0;
   font-family: var(--font-ui);
   color: var(--fg-2);
+}
+
+.tab-bar__tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.tab-bar__tools {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-left: 8px;
+  border-left: 1px solid var(--line-faint);
 }
 
 .tab {
@@ -20,8 +38,8 @@
   align-items: center;
   gap: 6px;
   padding: 0 10px 0 12px;
-  height: 28px;
-  border-radius: 6px;
+  height: 32px;
+  border-radius: 7px;
   background: transparent;
   border: 1px solid transparent;
   color: var(--fg-2);
@@ -46,7 +64,7 @@
   background: var(--bg-2);
   border-color: var(--line-strong);
   color: var(--fg);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.02) inset;
+  box-shadow: 0 -2px 0 var(--tab-accent) inset;
 }
 
 .tab__activity {
@@ -73,7 +91,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 450;
   /* Truncate from the left so the basename (most informative) stays
    * visible: `…ents/prod-iofcz` instead of `vikuna-deployments/prod…`. */
@@ -131,16 +149,12 @@
   color: var(--fg);
 }
 
-.tab-bar__spacer {
-  flex: 1;
-}
-
 .tab-bar__ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border: none;
   background: transparent;
   color: var(--muted);

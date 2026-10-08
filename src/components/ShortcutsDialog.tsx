@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useMemo } from "react";
 import { Modal } from "./Modal";
 import { useAppStore } from "../store/appStore";
@@ -38,6 +39,7 @@ type ShortcutsDialogProps = {
 };
 
 export function ShortcutsDialog({ open, onClose }: ShortcutsDialogProps) {
+  const { t } = useI18n();
   const keybindings = useAppStore((s) => s.settings.keybindings);
   const resolved = useMemo(() => resolveBindings(keybindings), [keybindings]);
 
@@ -51,7 +53,7 @@ export function ShortcutsDialog({ open, onClose }: ShortcutsDialogProps) {
   const groups = [...registryGroups, ...EXTRA_GROUPS];
 
   return (
-    <Modal open={open} onClose={onClose} title="Keyboard shortcuts" maxWidth={560}>
+    <Modal open={open} onClose={onClose} title={t("Keyboard shortcuts")} maxWidth={560}>
       <div className="shortcuts">
         {groups.map((g) => (
           <section key={g.heading} className="shortcuts__group">

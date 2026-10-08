@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./ContextMenu.css";
+import { useI18n } from "../i18n";
 
 export type MenuItem =
   | {
@@ -80,6 +81,7 @@ function MenuItems({
   items: MenuItem[];
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   return (
     <>
       {items.map((item, i) => {
@@ -106,7 +108,7 @@ function MenuItems({
               onClose();
             }}
           >
-            <span className="context-menu__label">{item.label}</span>
+            <span className="context-menu__label">{t(item.label)}</span>
             {item.kbd && <span className="context-menu__kbd">{item.kbd}</span>}
           </button>
         );
@@ -122,6 +124,7 @@ function SubMenuItem({
   item: Extract<MenuItem, { submenu: MenuItem[] }>;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [flipLeft, setFlipLeft] = useState(false);
 
@@ -149,7 +152,7 @@ function SubMenuItem({
         className="context-menu__item context-menu__item--parent"
         disabled={item.disabled}
       >
-        <span className="context-menu__label">{item.label}</span>
+        <span className="context-menu__label">{t(item.label)}</span>
         <span className="context-menu__arrow">›</span>
       </button>
       {!item.disabled && (

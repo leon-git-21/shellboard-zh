@@ -29,7 +29,7 @@ import {
   type PersistedSession,
   type PersistedTab,
 } from "../utils/sessionSerialize";
-import { flushAllWrites } from "../utils/terminalRegistry";
+import { flushAllWrites, waitForTerminalReady } from "../utils/terminalRegistry";
 import { notifyCommandFinished } from "../utils/notify";
 import { DEFAULT_THEME_ID, findTheme } from "../utils/themes";
 import { isValidBinding, type Binding } from "../shortcuts/binding";
@@ -117,9 +117,12 @@ export type ProjectGroup = {
 export type AddTabOptions = {
   projectId?: string;
   cwd?: string;
+  title?: string;
+  command?: string;
 };
 
 export type Settings = {
+  language: import("../i18n").Language;
   terminalFontFamily: string;
   terminalFontSize: number;
   uiFontSize: number;
@@ -160,6 +163,7 @@ export type Settings = {
 };
 
 export const DEFAULT_SETTINGS: Settings = {
+  language: "zh-CN",
   terminalFontFamily:
     'Menlo, Monaco, "Cascadia Code", "Fira Code", Consolas, "Liberation Mono", monospace',
   terminalFontSize: 13,
@@ -303,6 +307,7 @@ type AppState = {
   toggleBroadcast: (tabId: string) => void;
 
   addTab: (opts?: AddTabOptions) => Promise<boolean>;
+  launchSnippet: (projectId: string, snippetId: string) => Promise<boolean>;
   closeTab: (tabId: string) => Promise<void>;
   /** User-facing tab close. Confirms first when the tab is a split and the
    * confirmCloseSplitTab setting is on; otherwise closes immediately. */
@@ -440,6 +445,7 @@ function clampSettings(s: Partial<Settings>): Settings {
       : DEFAULT_SETTINGS.terminalTheme;
   return {
     terminalFontFamily: ff,
+    language: s.language === "en" ? "en" : "zh-CN",
     terminalFontSize: clampNumber(
       s.terminalFontSize,
       SETTINGS_LIMITS.terminalFontSize.min,
@@ -811,7 +817,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
     const tabsInProject = get().tabs.filter(
       (t) => t.projectId === projectId,
     ).length;
-    const title = `${project.name} ${tabsInProject + 1}`;
+    const title = opts?.title || `${project.name} ${tabsInProject + 1}`;
 
     set((state) => ({
       tabs: [
@@ -819,7 +825,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
         {
           id: tabId,
           title,
-          customTitle: false,
+          customTitle: !!opts?.title,
           mosaic: terminalId,
           focusedLeafId: terminalId,
           projectId,
@@ -829,6 +835,7 @@ export const useAppStore = create<AppState>()((set, get) => ({
         },
       ],
       activeTabId: tabId,
+      activeProjectId: projectId,
       terminals: {
         ...state.terminals,
         [terminalId]: { id: terminalId, cwd },
@@ -839,6 +846,10 @@ export const useAppStore = create<AppState>()((set, get) => ({
       },
     }));
     maybeWarnTerminalCount(Object.keys(get().terminals).length, get().showError);
+    if (opts?.command) {
+      await waitForTerminalReady(terminalId);
+      await invoke("write_to_pty", { id: terminalId, data: `${opts.command.replace(/\r?\n/g, "\r")}\r` });
+    }
     return true;
   },
 
@@ -1624,6 +1635,13 @@ export const useAppStore = create<AppState>()((set, get) => ({
         : `${snippet.command}\r`
       : snippet.command;
     await invoke("write_to_pty", { id: targetLeaf, data });
+  },
+
+  launchSnippet: async (projectId, snippetId) => {
+    const project = get().projects.find((item) => item.id === projectId);
+    const snippet = project?.snippets?.find((item) => item.id === snippetId);
+    if (!project || !snippet?.command.trim()) return false;
+    return get().addTab({ projectId, cwd: project.path, title: snippet.name || snippet.command, command: snippet.command });
   },
 
   addGroup: async (name) => {

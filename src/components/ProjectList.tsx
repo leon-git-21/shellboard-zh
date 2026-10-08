@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { ask, message } from "@tauri-apps/plugin-dialog";
 import { openPath } from "@tauri-apps/plugin-opener";
@@ -49,6 +50,7 @@ type ProjectListProps = {
 };
 
 export function ProjectList({ onAddProject, search = "" }: ProjectListProps) {
+  const { t } = useI18n();
   const projects = useAppStore((s) => s.projects);
   const groups = useAppStore((s) => s.groups);
   const activeProjectId = useAppStore((s) => s.activeProjectId);
@@ -426,8 +428,7 @@ export function ProjectList({ onAddProject, search = "" }: ProjectListProps) {
       <div className="project-list">
         {projects.length === 0 && groups.length === 0 && (
           <div className="project-list__empty">
-            No projects yet. Click + to add one.
-          </div>
+            {t("No projects yet. Click + to add one.")}</div>
         )}
 
         <DndContext
@@ -511,7 +512,7 @@ export function ProjectList({ onAddProject, search = "" }: ProjectListProps) {
 
           {noResults && (
             <div className="project-list__empty">
-              No projects match "{search}"
+              {t("No projects match \"")}{search}"
             </div>
           )}
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Shellboard",
-  "version": "2.4.1",
-  "identifier": "cz.calmbit.shellboard",
+  "productName": "Shellboard Local",
+  "version": "2.4.1-local.2",
+  "identifier": "local.shellboard.custom",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,8 @@
   "app": {
     "windows": [
       {
-        "title": "Shellboard",
+        "title": "Shellboard Local",
+        "theme": "Dark",
         "width": 1024,
         "height": 720,
         "minWidth": 400,

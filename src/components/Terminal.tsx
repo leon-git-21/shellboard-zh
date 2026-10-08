@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
@@ -17,6 +18,7 @@ import { findTheme } from "../utils/themes";
 import { collectLeaves } from "../utils/mosaic";
 import {
   registerTerminal,
+  markTerminalReady,
   unregisterTerminal,
 } from "../utils/terminalRegistry";
 import { markTerminalBufferDirty } from "../utils/sessionSerialize";
@@ -38,6 +40,7 @@ type TerminalProps = {
 };
 
 export function Terminal({ terminalId, isActive }: TerminalProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const xtermRef = useRef<XTerm | null>(null);
   const fitRef = useRef<FitAddon | null>(null);
@@ -83,6 +86,7 @@ export function Terminal({ terminalId, isActive }: TerminalProps) {
       }),
     );
     xterm.open(container);
+    xterm.textarea?.setAttribute("aria-label", t("Terminal input"));
     xtermRef.current = xterm;
     fitRef.current = fit;
     searchRef.current = search;
@@ -355,6 +359,9 @@ export function Terminal({ terminalId, isActive }: TerminalProps) {
         return;
       }
       unlisteners.push(offData, offExit);
+      await invoke("attach_pty", { id: terminalId });
+      if (disposed) return;
+      markTerminalReady(terminalId);
     })();
 
     disposables.push(
@@ -453,6 +460,10 @@ export function Terminal({ terminalId, isActive }: TerminalProps) {
 
   // Apply font settings live to an already-mounted xterm.
   useEffect(() => {
+    xtermRef.current?.textarea?.setAttribute("aria-label", t("Terminal input"));
+  }, [t]);
+
+  useEffect(() => {
     const xterm = xtermRef.current;
     if (!xterm) return;
     if (
@@ -535,7 +546,7 @@ export function Terminal({ terminalId, isActive }: TerminalProps) {
             autoFocus
             type="text"
             value={searchTerm}
-            placeholder="Find…"
+            placeholder={t("Find…")}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               if (e.target.value) runSearch("next", e.target.value);
@@ -554,24 +565,24 @@ export function Terminal({ terminalId, isActive }: TerminalProps) {
           <button
             type="button"
             onClick={() => runSearch("prev", searchTerm)}
-            aria-label="Previous match"
-            title="Previous match (Shift+Enter)"
+            aria-label={t("Previous match")}
+            data-tooltip={t("Previous match (Shift+Enter)")}
           >
             ↑
           </button>
           <button
             type="button"
             onClick={() => runSearch("next", searchTerm)}
-            aria-label="Next match"
-            title="Next match (Enter)"
+            aria-label={t("Next match")}
+            data-tooltip={t("Next match (Enter)")}
           >
             ↓
           </button>
           <button
             type="button"
             onClick={closeSearch}
-            aria-label="Close search"
-            title="Close (Esc)"
+            aria-label={t("Close search")}
+            data-tooltip={t("Close (Esc)")}
           >
             ×
           </button>

@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect } from "react";
 import { useAppStore } from "../store/appStore";
 import "./ErrorToast.css";
@@ -7,6 +8,7 @@ import "./ErrorToast.css";
  * ran out of PTYs). Replaces the old behavior where such failures were
  * silently swallowed. */
 export function ErrorToast() {
+  const { t } = useI18n();
   const message = useAppStore((s) => s.errorToast);
   const dismiss = useAppStore((s) => s.dismissError);
 
@@ -28,7 +30,7 @@ export function ErrorToast() {
         type="button"
         className="error-toast__dismiss"
         onClick={() => dismiss()}
-        aria-label="Dismiss"
+        aria-label={t("Dismiss")}
       >
         ×
       </button>

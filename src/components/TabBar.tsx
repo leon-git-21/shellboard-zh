@@ -20,12 +20,14 @@ import { ContextMenu, type MenuItem } from "./ContextMenu";
 import { cwdLabel } from "../utils/path";
 import { Broadcast, Close, Plus, Search, Split, SplitH } from "./icons";
 import "./TabBar.css";
+import { useI18n } from "../i18n";
 
 type TabBarProps = {
   onOpenGlobalSearch?: () => void;
 };
 
 export function TabBar({ onOpenGlobalSearch }: TabBarProps = {}) {
+  const { t } = useI18n();
   const tabs = useAppStore((s) => s.tabs);
   const terminals = useAppStore((s) => s.terminals);
   const activeTabId = useAppStore((s) => s.activeTabId);
@@ -142,9 +144,11 @@ export function TabBar({ onOpenGlobalSearch }: TabBarProps = {}) {
       onDragCancel={() => setActiveDragId(null)}
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
     >
+      <div className="tab-bar">
       <div
-        className="tab-bar"
+        className="tab-bar__tabs"
         role="tablist"
+        aria-label={t("Terminal tabs")}
         style={
           {
             "--tab-accent": activeProject?.color ?? "#0a84ff",
@@ -185,42 +189,44 @@ export function TabBar({ onOpenGlobalSearch }: TabBarProps = {}) {
         <button
           type="button"
           className="tab-bar__ghost"
-          aria-label="New tab"
-          title="New tab"
+          aria-label={t("New tab")}
+          data-tooltip={t("Open a new terminal in this project")}
           onClick={() => void addTab()}
         >
-          <Plus size={12} />
+          <Plus size={16} />
         </button>
-        <span className="tab-bar__spacer" />
+      </div>
+      <div className="tab-bar__tools" role="toolbar" aria-label={t("Terminal tools")}>
         {onOpenGlobalSearch && (
           <button
             type="button"
             className="tab-bar__ghost"
-            aria-label="Search"
-            title="Search (⌘F)"
+            aria-label={t("Search")}
+            data-tooltip={t("Search all terminals")}
             onClick={onOpenGlobalSearch}
           >
-            <Search size={13} />
+            <Search size={16} />
           </button>
         )}
         <button
           type="button"
           className="tab-bar__ghost"
-          aria-label="Split horizontally"
-          title="Split horizontally"
+          aria-label={t("Split horizontally")}
+          data-tooltip={t("Split horizontally")}
           onClick={() => void splitActiveTerminal("column")}
         >
-          <SplitH size={13} />
+          <SplitH size={16} />
         </button>
         <button
           type="button"
           className="tab-bar__ghost"
-          aria-label="Split vertically"
-          title="Split vertically"
+          aria-label={t("Split vertically")}
+          data-tooltip={t("Split vertically")}
           onClick={() => void splitActiveTerminal("row")}
         >
-          <Split size={13} />
+          <Split size={16} />
         </button>
+      </div>
       </div>
       <DragOverlay dropAnimation={null}>
         {draggedTab ? (
@@ -272,6 +278,7 @@ function SortableTab({
   onCommitRename,
   onCancelEdit,
 }: SortableTabProps) {
+  const { t } = useI18n();
   const {
     attributes,
     listeners,
@@ -343,23 +350,24 @@ function SortableTab({
           {tab.hasUnread && !isActive && (
             <span
               className={`tab__activity${tab.hasFailed ? " tab__activity--failed" : ""}`}
-              aria-label={tab.hasFailed ? "Command failed" : "Activity"}
+              aria-label={t(tab.hasFailed ? "Command failed" : "Activity")}
             />
           )}
           {tab.broadcastInput && (
             <Broadcast
               size={12}
               className="tab__broadcast"
-              aria-label="Broadcast input"
+              aria-label={t("Broadcast input")}
             />
           )}
-          <span className="tab__title" title={displayTitle}>
+          <span className="tab__title" data-tooltip={displayTitle}>
             {displayTitle}
           </span>
           <button
             type="button"
             className="tab__close"
-            aria-label={`Close ${displayTitle}`}
+            aria-label={`${t("Close")} ${displayTitle}`}
+            data-tooltip={`${t("Close tab")} · ${displayTitle}`}
             onClick={(e) => {
               e.stopPropagation();
               onClose();

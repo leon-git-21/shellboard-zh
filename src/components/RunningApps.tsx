@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { HIGH_TERMINAL_COUNT, useAppStore } from "../store/appStore";
@@ -98,6 +99,7 @@ function computeIdleTabIds(apps: Record<string, RunningApp>): string[] {
 }
 
 export function RunningApps({ open, onClose }: RunningAppsProps) {
+  const { t } = useI18n();
   const [apps, setApps] = useState<Record<string, RunningApp>>({});
   const [self, setSelf] = useState<SelfMemory | null>(null);
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -225,7 +227,7 @@ export function RunningApps({ open, onClose }: RunningAppsProps) {
         className="rapps"
         role="dialog"
         aria-modal="true"
-        aria-label="Running apps"
+        aria-label={t("Running apps")}
         tabIndex={-1}
         autoFocus
         onKeyDown={(e) => {
@@ -247,13 +249,13 @@ export function RunningApps({ open, onClose }: RunningAppsProps) {
       >
         <div className="rapps__header">
           <Terminal size={15} className="rapps__icon" />
-          <span className="rapps__title">Running apps</span>
+          <span className="rapps__title">{t("Running apps")}</span>
           <span className="rapps__spacer" />
-          <span className="rapps__esc">esc</span>
+          <span className="rapps__esc">{t("esc")}</span>
         </div>
         <div className="rapps__list">
           {rows.length === 0 && (
-            <div className="rapps__hint">Nothing running.</div>
+            <div className="rapps__hint">{t("Nothing running.")}</div>
           )}
           {rows.map((row, i) => (
             <button
@@ -291,27 +293,25 @@ export function RunningApps({ open, onClose }: RunningAppsProps) {
           ))}
         </div>
         <div className="rapps__footer">
-          <span>↵ jump to terminal</span>
+          <span>{t("↵ jump to terminal")}</span>
           <span className="rapps__footer-spacer" />
           {idleTabIds.length > 0 && (
             <button
               type="button"
               className="rapps__cull"
               onClick={cullIdle}
-              title="Close terminals running only an idle shell (the active tab is kept). Frees their scrollback buffers."
+              data-tooltip={t("Close terminals running only an idle shell (the active tab is kept). Frees their scrollback buffers.")}
             >
-              Close {idleTabIds.length} idle
-            </button>
+              {t("Close")}{idleTabIds.length} {t("idle")}</button>
           )}
           {self && (
             <span
               className={`rapps__self ${selfWarn ? "rapps__self--warn" : ""}`}
-              title="Shellboard's own memory (excludes the apps running in terminals). Approximate on macOS — the WebView renders out-of-process."
+              data-tooltip={t("Shellboard's own memory (excludes the apps running in terminals). Approximate on macOS — the WebView renders out-of-process.")}
             >
-              Shellboard ~{formatBytes(self.appRssBytes)} ·{" "}
+              {t("Shellboard ~")}{formatBytes(self.appRssBytes)} ·{" "}
               {self.terminalCount} {self.terminalCount === 1 ? "terminal" : "terminals"} ·{" "}
-              {scrollback.toLocaleString()}-line scrollback
-            </span>
+              {scrollback.toLocaleString()}{t("-line scrollback")}</span>
           )}
         </div>
       </div>

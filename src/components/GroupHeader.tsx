@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -29,6 +30,7 @@ export function GroupHeader({
   onCommitRename,
   onCancelRename,
 }: GroupHeaderProps) {
+  const { t } = useI18n();
   const showGroupCount = useAppStore((s) => s.settings.showGroupCount);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [draft, setDraft] = useState(group.name);
@@ -111,7 +113,7 @@ export function GroupHeader({
         <>
           <span className="group-header__name">{group.name}</span>
           {hasActivity && (
-            <span className="group-header__activity" aria-label="Activity" />
+            <span className="group-header__activity" aria-label={t("Activity")} />
           )}
           {showGroupCount && (
             <span className="group-header__count">{projectCount}</span>
@@ -119,8 +121,8 @@ export function GroupHeader({
           <button
             type="button"
             className="group-header__add"
-            aria-label="Add project here"
-            title="Add project here"
+            aria-label={t("Add project here")}
+            data-tooltip={t("Add project here")}
             onClick={(e) => {
               e.stopPropagation();
               onAdd();

@@ -3,15 +3,18 @@ mod pty;
 use std::collections::HashMap;
 
 use pty::{
+    attach_pty,
     git_branch, git_status, home_dir, kill_pty, resize_pty, running_apps_snapshot, spawn_pty,
     write_to_pty, PtyManager,
 };
 use std::path::Path;
 
 use tauri::{
-    menu::{Menu, MenuBuilder, MenuItem, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder},
+    menu::{Menu, MenuBuilder, MenuItem, MenuItemBuilder, SubmenuBuilder},
     AppHandle, Emitter, Manager, Runtime,
 };
+#[cfg(target_os = "macos")]
+use tauri::menu::PredefinedMenuItem;
 
 // Per-item shortcut display the frontend pushes (see set_menu_shortcuts). `accel`
 // is a Tauri/muda accelerator string (used on macOS for a real, right-aligned
@@ -328,14 +331,42 @@ fn build_menu<R: Runtime>(
 fn set_menu_shortcuts(
     app: AppHandle,
     shortcuts: HashMap<String, ShortcutInfo>,
+    labels: HashMap<String, String>,
 ) -> Result<(), String> {
     let app_main = app.clone();
     app.run_on_main_thread(move || {
         if let Ok(menu) = build_menu(&app_main, &shortcuts) {
+            if let Err(error) = localize_menu(&menu, &labels) {
+                eprintln!("Could not translate menu: {error}");
+            }
             let _ = app_main.set_menu(menu);
         }
     })
     .map_err(|e| e.to_string())
+}
+
+fn localized_label(text: &str, labels: &HashMap<String, String>) -> String {
+    let (base, shortcut) = text.split_once('\t').unwrap_or((text, ""));
+    let translated = labels.get(base).map(String::as_str).unwrap_or(base);
+    if shortcut.is_empty() { translated.to_owned() } else { format!("{translated}\t{shortcut}") }
+}
+
+fn localize_menu<R: Runtime>(menu: &Menu<R>, labels: &HashMap<String, String>) -> tauri::Result<()> {
+    localize_items(menu.items()?, labels)
+}
+
+fn localize_items<R: Runtime>(items: Vec<tauri::menu::MenuItemKind<R>>, labels: &HashMap<String, String>) -> tauri::Result<()> {
+    for item in items {
+        match item {
+            tauri::menu::MenuItemKind::MenuItem(item) => item.set_text(localized_label(&item.text()?, labels))?,
+            tauri::menu::MenuItemKind::Submenu(item) => {
+                item.set_text(localized_label(&item.text()?, labels))?;
+                localize_items(item.items()?, labels)?;
+            }
+            _ => {}
+        }
+    }
+    Ok(())
 }
 
 // The bundle identifier changed from cz.petrhlozek.shellboard to
@@ -446,8 +477,16 @@ pub fn run() {
             let _ = app.emit("menu://action", event.id().as_ref());
         })
         .manage(PtyManager::default())
+        .on_window_event(|window, event| {
+            if window.label() == "main" && matches!(event, tauri::WindowEvent::Destroyed) {
+                if let Some(manager) = window.try_state::<PtyManager>() {
+                    manager.shutdown();
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             spawn_pty,
+            attach_pty,
             write_to_pty,
             resize_pty,
             kill_pty,

@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useState } from "react";
 import "./ColorPicker.css";
 
@@ -62,6 +63,7 @@ type ColorPickerProps = {
 };
 
 export function ColorPicker({ value, onChange }: ColorPickerProps) {
+  const { t } = useI18n();
   const [custom, setCustom] = useState(
     PROJECT_COLORS.includes(value) ? "" : value,
   );
@@ -89,8 +91,7 @@ export function ColorPicker({ value, onChange }: ColorPickerProps) {
       </div>
       <div className="color-picker__custom">
         <label>
-          Custom:
-          <input
+          {t("Custom:")}<input
             type="text"
             placeholder="#a1b2c3"
             value={custom}

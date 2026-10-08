@@ -11,16 +11,37 @@ import type { SerializeAddon } from "@xterm/addon-serialize";
 type Entry = {
   xterm: XTerm;
   serializer: SerializeAddon;
+  ready: boolean;
 };
 
 const instances = new Map<string, Entry>();
+const readyListeners = new Map<string, Set<() => void>>();
 
 export function registerTerminal(
   id: string,
   xterm: XTerm,
   serializer: SerializeAddon,
 ): void {
-  instances.set(id, { xterm, serializer });
+  instances.set(id, { xterm, serializer, ready: false });
+}
+
+export function markTerminalReady(id: string): void {
+  const entry = instances.get(id);
+  if (!entry) return;
+  entry.ready = true;
+  for (const resolve of readyListeners.get(id) ?? []) resolve();
+}
+
+export function waitForTerminalReady(id: string): Promise<void> {
+  if (instances.get(id)?.ready) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const listeners = readyListeners.get(id) ?? new Set<() => void>();
+    readyListeners.set(id, listeners);
+    function cleanup() { listeners.delete(ready); if (!listeners.size) readyListeners.delete(id); }
+    const timeout = setTimeout(() => { cleanup(); reject(new Error("Terminal initialization timed out")); }, 8000);
+    function ready() { clearTimeout(timeout); cleanup(); resolve(); }
+    listeners.add(ready);
+  });
 }
 
 export function unregisterTerminal(id: string): void {

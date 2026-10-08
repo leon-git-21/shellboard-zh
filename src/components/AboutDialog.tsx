@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useState } from "react";
 import { getName, getVersion, getTauriVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -12,6 +13,7 @@ type AboutDialogProps = {
 };
 
 export function AboutDialog({ open, onClose }: AboutDialogProps) {
+  const { t } = useI18n();
   const [info, setInfo] = useState<{
     name: string;
     version: string;
@@ -40,15 +42,12 @@ export function AboutDialog({ open, onClose }: AboutDialogProps) {
         <img src="/logo.png" alt="Shellboard logo" className="about__logo" />
         <div className="about__name">{info?.name ?? "Shellboard"}</div>
         <div className="about__version">
-          Version {info?.version ?? "…"}
+          {t("Version")}{info?.version ?? "…"}
         </div>
         <div className="about__tagline">
-          Cross-platform terminal with per-project tabs & splits.
-        </div>
+          {t("Cross-platform terminal with per-project tabs & splits.")}</div>
         <div className="about__meta">
-          Built with Tauri {info?.tauri ?? "…"} · React · xterm.js ·
-          portable-pty
-        </div>
+          {t("Built with Tauri")}{info?.tauri ?? "…"} {t("· React · xterm.js · portable-pty")}</div>
         <a
           className="about__link"
           href={WEBSITE_URL}
@@ -57,15 +56,13 @@ export function AboutDialog({ open, onClose }: AboutDialogProps) {
             void openUrl(WEBSITE_URL).catch(() => {});
           }}
         >
-          calmbit.cz/en/shellboard
-        </a>
+          {t("calmbit.cz/en/shellboard")}</a>
         <button
           type="button"
           className="about__close"
           onClick={onClose}
         >
-          Close
-        </button>
+          {t("Close")}</button>
       </div>
     </Modal>
   );

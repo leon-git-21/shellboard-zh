@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useAppStore } from "../store/appStore";
 import { findTheme } from "../utils/themes";
-import { Activity, Logo, Moon, Sun } from "./icons";
+import { Activity, Logo, Moon, Sun, Search, SidebarIcon } from "./icons";
+import { CommandLauncher } from "./CommandLauncher";
 import "./TopBar.css";
+import { useI18n } from "../i18n";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { IS_MAC } from "../shortcuts/binding";
 
 /** Relative luminance of an #rrggbb / #rgb / rgba(...) color. Returns 0..1. */
 function colorLuminance(input: string | undefined): number {
@@ -71,9 +75,14 @@ type TopBarProps = {
 };
 
 export function TopBar({ onOpenPalette, onOpenRunningApps }: TopBarProps) {
+  const { t } = useI18n();
+  const showError = useAppStore((state) => state.showError);
   const activeProjectId = useAppStore((s) => s.activeProjectId);
   const projects = useAppStore((s) => s.projects);
   const activeProject = projects.find((p) => p.id === activeProjectId);
+  const sidebarVisible = useAppStore((s) => s.sidebarVisible);
+  const sidebarWidth = useAppStore((s) => s.sidebarWidth);
+  const toggleSidebar = useAppStore((s) => s.toggleSidebar);
   const terminalTheme = useAppStore((s) => s.settings.terminalTheme);
   const updateSettings = useAppStore((s) => s.updateSettings);
 
@@ -102,12 +111,13 @@ export function TopBar({ onOpenPalette, onOpenRunningApps }: TopBarProps) {
     } else {
       document.documentElement.removeAttribute("data-theme");
     }
+    void getCurrentWindow().setTheme(chromeTheme).catch((error) => showError(String(error)));
     try {
       localStorage.setItem(CHROME_THEME_KEY, chromeTheme);
     } catch {
       /* ignore */
     }
-  }, [chromeTheme]);
+  }, [chromeTheme, showError]);
 
   // When the user manually picks a terminal theme (from Settings or the
   // palette), follow its lightness with the chrome and remember the choice
@@ -167,45 +177,54 @@ export function TopBar({ onOpenPalette, onOpenRunningApps }: TopBarProps) {
   }, []);
 
   return (
-    <div className="topbar" data-tauri-drag-region>
-      <div className="topbar__brand" data-tauri-drag-region>
-        <Logo size={13} color="var(--accent-strong)" />
-        <span className="topbar__name">ShellBoard</span>
-        {activeProject && (
-          <>
-            <span className="topbar__sep">/</span>
-            <span className="topbar__project">{activeProject.name}</span>
-          </>
-        )}
+    <header className="topbar" data-tauri-drag-region>
+      <div className="topbar__brand" style={{ width: sidebarVisible ? sidebarWidth + 1 : undefined }} data-tauri-drag-region>
+        <span className="topbar__logo"><Logo size={22} color="var(--accent-strong)" /></span>
+        <span className="topbar__name">{t("ShellBoard")}</span>
+        <button type="button" className="topbar__btn topbar__sidebar-toggle"
+          onClick={() => void toggleSidebar()}
+          aria-label={t(sidebarVisible ? "Hide sidebar" : "Show sidebar")}
+          data-tooltip={t(sidebarVisible ? "Hide sidebar" : "Show sidebar")}>
+          <SidebarIcon size={16} />
+        </button>
       </div>
-      <span className="topbar__spacer" data-tauri-drag-region />
+      <div className="topbar__workspace">
+        <div className="topbar__content" data-tauri-drag-region>
+          {activeProject && <h1 className="topbar__project" data-tooltip={activeProject.path}>{activeProject.name}</h1>}
+          <span className="topbar__spacer" data-tauri-drag-region />
+          {activeProject && <CommandLauncher key={activeProject.id} projectId={activeProject.id} />}
+          <div className="topbar__utilities">
       <button
         type="button"
         className="topbar__btn"
         onClick={onOpenRunningApps}
-        aria-label="Running apps"
-        title="Running apps"
+        aria-label={t("Running apps")}
+        data-tooltip={t("Running apps")}
       >
-        <Activity size={11} />
+        <Activity size={16} />
       </button>
       <button
         type="button"
         className="topbar__btn"
         onClick={toggleChromeTheme}
-        aria-label={chromeTheme === "dark" ? "Switch to light" : "Switch to dark"}
-        title={chromeTheme === "dark" ? "Light mode" : "Dark mode"}
+        aria-label={t(chromeTheme === "dark" ? "Switch to light" : "Switch to dark")}
+        data-tooltip={t(chromeTheme === "dark" ? "Light mode" : "Dark mode")}
       >
-        {chromeTheme === "dark" ? <Moon size={11} /> : <Sun size={11} />}
+        {chromeTheme === "dark" ? <Moon size={16} /> : <Sun size={16} />}
       </button>
       <button
         type="button"
-        className="topbar__cmdk"
+        className="topbar__btn topbar__palette"
         onClick={onOpenPalette}
-        title="Command palette"
+        data-tooltip={t("Command palette")}
+        aria-label={t("Command palette")}
       >
-        <span className="topbar__cmdk-key">⌘</span>
-        <span className="topbar__cmdk-key">K</span>
+        <Search size={16} />
+        <kbd>{IS_MAC ? "⌘ K" : "Ctrl K"}</kbd>
       </button>
-    </div>
+          </div>
+        </div>
+      </div>
+    </header>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { useFocusTrap } from "../hooks/useFocusTrap";
 import "./Modal.css";
+import { useI18n } from "../i18n";
 
 type ModalProps = {
   open: boolean;
@@ -11,6 +12,7 @@ type ModalProps = {
 };
 
 export function Modal({ open, onClose, title, children, maxWidth = 420 }: ModalProps) {
+  const { t } = useI18n();
   const dialogRef = useRef<HTMLDivElement | null>(null);
   useFocusTrap(dialogRef, open);
 
@@ -35,12 +37,12 @@ export function Modal({ open, onClose, title, children, maxWidth = 420 }: ModalP
         className="modal"
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={title ? t(title) : undefined}
         tabIndex={-1}
         style={{ maxWidth }}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {title && <div className="modal__title">{title}</div>}
+        {title && <div className="modal__title">{t(title)}</div>}
         <div className="modal__body">{children}</div>
       </div>
     </div>

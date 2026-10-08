@@ -16,7 +16,7 @@ import {
 import { findTheme, THEMES } from "../utils/themes";
 import { Cog, Folder, Search, Terminal as TerminalIcon } from "./icons";
 import { ShortcutInput } from "./ShortcutInput";
-import { bindingKey, shortcutCapture, type Binding } from "../shortcuts/binding";
+import { bindingKey, shortcutCapture, IS_MAC, type Binding } from "../shortcuts/binding";
 import {
   DEFAULT_BINDINGS,
   resolveBindings,
@@ -24,6 +24,7 @@ import {
   SHORTCUT_CATEGORIES,
 } from "../shortcuts/registry";
 import "./SettingsDialog.css";
+import { useI18n } from "../i18n";
 
 type SettingsDialogProps = {
   open: boolean;
@@ -106,6 +107,7 @@ export function SettingsDialog({
   onClose,
   onOpenAbout,
 }: SettingsDialogProps) {
+  const { t } = useI18n();
   const [section, setSection] = useState<SectionId>("general");
   const [query, setQuery] = useState("");
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -145,35 +147,35 @@ export function SettingsDialog({
         className="settings-dialog"
         role="dialog"
         aria-modal="true"
-        aria-label="Settings"
+        aria-label={t("Settings")}
         onMouseDown={(e) => e.stopPropagation()}
       >
         <header className="settings-dialog__header">
           <Cog size={14} style={{ color: "var(--muted)" }} />
-          <span className="settings-dialog__title">Settings</span>
+          <span className="settings-dialog__title">{t("Settings")}</span>
           <span className="settings-dialog__spacer" />
           <label className="settings-dialog__search">
             <Search size={11} style={{ color: "var(--muted)" }} />
             <input
               ref={searchRef}
               type="text"
-              placeholder="Search settings…"
+              placeholder={t("Search settings…")}
+              aria-label={t("Search settings…")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               spellCheck={false}
             />
             {query ? (
               <kbd className="kbd" onClick={() => setQuery("")}>
-                esc
-              </kbd>
+                {t("esc")}</kbd>
             ) : (
-              <kbd className="kbd">⌘F</kbd>
+              <kbd className="kbd">{IS_MAC ? "⌘F" : "Ctrl+F"}</kbd>
             )}
           </label>
         </header>
 
         <div className="settings-dialog__body">
-          <nav className="settings-dialog__rail" aria-label="Settings sections">
+          <nav className="settings-dialog__rail" aria-label={t("Settings sections")}>
             {RAIL.map((item) => {
               const active = !query && section === item.id;
               return (
@@ -193,7 +195,7 @@ export function SettingsDialog({
                   <span className="settings-dialog__rail-icon">
                     {item.icon(active)}
                   </span>
-                  <span>{item.label}</span>
+                  <span>{t(item.label)}</span>
                 </button>
               );
             })}
@@ -220,8 +222,7 @@ export function SettingsDialog({
             className="sb-btn sb-btn--ghost"
             onClick={onOpenAbout}
           >
-            About…
-          </button>
+            {t("About…")}</button>
           <span className="settings-dialog__spacer" />
           <button
             type="button"
@@ -230,14 +231,13 @@ export function SettingsDialog({
               void useAppStore.getState().updateSettings(DEFAULT_SETTINGS);
             }}
           >
-            Reset to defaults
-          </button>
+            {t("Reset to defaults")}</button>
           <button
             type="button"
             className="sb-btn sb-btn--primary"
             onClick={onClose}
           >
-            <span>Done</span>
+            <span>{t("Done")}</span>
             <kbd className="kbd kbd--on-accent">↵</kbd>
           </button>
         </footer>
@@ -249,13 +249,15 @@ export function SettingsDialog({
 // ── Section pane ──────────────────────────────────────────────────────────
 
 function SectionPane({ id }: { id: SectionId }) {
+  const { t } = useI18n();
   switch (id) {
     case "general":
       return (
         <SectionHeader
-          title="General"
-          subtitle="Window-wide preferences applied to every project."
+          title={t("General")}
+          subtitle={t("Window-wide preferences applied to every project.")}
         >
+          <LanguageField />
           <UiFontSizeField />
           <ShowGroupCountField />
           <ConfirmCloseSplitTabField />
@@ -266,8 +268,8 @@ function SectionPane({ id }: { id: SectionId }) {
     case "terminal":
       return (
         <SectionHeader
-          title="Terminal"
-          subtitle="Font, scrollback, and behaviour used by every spawned shell."
+          title={t("Terminal")}
+          subtitle={t("Font, scrollback, and behaviour used by every spawned shell.")}
         >
           <TerminalFontField />
           <TerminalFontSizeField />
@@ -281,8 +283,8 @@ function SectionPane({ id }: { id: SectionId }) {
     case "appearance":
       return (
         <SectionHeader
-          title="Appearance"
-          subtitle="Terminal palette. The chrome auto-aligns to the background."
+          title={t("Appearance")}
+          subtitle={t("Terminal palette. The chrome auto-aligns to the background.")}
         >
           <ThemeField />
         </SectionHeader>
@@ -290,8 +292,8 @@ function SectionPane({ id }: { id: SectionId }) {
     case "shell":
       return (
         <SectionHeader
-          title="Shell"
-          subtitle="Override the program ShellBoard launches in new panels."
+          title={t("Shell")}
+          subtitle={t("Override the program ShellBoard launches in new panels.")}
         >
           <ShellPathField />
           <ShellArgsField />
@@ -300,8 +302,8 @@ function SectionPane({ id }: { id: SectionId }) {
     case "shortcuts":
       return (
         <SectionHeader
-          title="Shortcuts"
-          subtitle="Click a shortcut to record a new combo. ⌫ resets it to the default; Esc cancels."
+          title={t("Shortcuts")}
+          subtitle={t("Click a shortcut to record a new combo. ⌫ resets it to the default; Esc cancels.")}
         >
           <ShortcutsList />
         </SectionHeader>
@@ -320,11 +322,12 @@ function SectionHeader({
   subtitle: string;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <>
       <div className="settings-section__head">
-        <h2 className="settings-section__title">{title}</h2>
-        <p className="settings-section__subtitle">{subtitle}</p>
+        <h2 className="settings-section__title">{t(title)}</h2>
+        <p className="settings-section__subtitle">{t(subtitle)}</p>
       </div>
       <div className="settings-section__body">{children}</div>
     </>
@@ -342,6 +345,7 @@ type FieldRowProps = {
 };
 
 function FieldRow({ label, hint, align = "center", children, section }: FieldRowProps) {
+  const { t } = useI18n();
   return (
     <div
       className={
@@ -349,11 +353,11 @@ function FieldRow({ label, hint, align = "center", children, section }: FieldRow
       }
     >
       <div className="field-row__text">
-        {section && <span className="field-row__chip">{section}</span>}
-        <span className="field-row__label">{label}</span>
-        {hint && <p className="field-row__hint">{hint}</p>}
+        {section && <span className="field-row__chip">{t(section)}</span>}
+        <span className="field-row__label">{t(label)}</span>
+        {hint && <p className="field-row__hint">{typeof hint === "string" ? t(hint) : hint}</p>}
       </div>
-      <div className="field-row__control">{children}</div>
+      <div className="field-row__control" role="group" aria-label={t(label)} data-tooltip={typeof hint === "string" ? t(hint) : t(label)}>{children}</div>
     </div>
   );
 }
@@ -369,12 +373,13 @@ function FieldStack({
   children: ReactNode;
   section?: string;
 }) {
+  const { t } = useI18n();
   return (
     <div className="field-stack">
-      {section && <span className="field-row__chip">{section}</span>}
-      <span className="field-stack__label">{label}</span>
+      {section && <span className="field-row__chip">{t(section)}</span>}
+      <span className="field-stack__label">{t(label)}</span>
       {children}
-      {hint && <p className="field-row__hint">{hint}</p>}
+      {hint && <p className="field-row__hint">{typeof hint === "string" ? t(hint) : hint}</p>}
     </div>
   );
 }
@@ -398,6 +403,7 @@ function SelectInput({
   mono,
   id,
 }: SelectInputProps) {
+  const { t } = useI18n();
   return (
     <div
       className="sb-surface sb-select"
@@ -411,7 +417,7 @@ function SelectInput({
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
-            {o.label}
+            {t(o.label)}
           </option>
         ))}
       </select>
@@ -443,6 +449,7 @@ function Stepper({
   width = 96,
   id,
 }: StepperProps) {
+  const { t } = useI18n();
   function clamp(n: number) {
     if (Number.isNaN(n)) return value;
     return Math.max(min, Math.min(max, n));
@@ -468,7 +475,7 @@ function Stepper({
           type="button"
           tabIndex={-1}
           onClick={() => onChange(clamp(value + step))}
-          aria-label="Increase"
+          aria-label={t("Increase")}
         >
           <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
             <path
@@ -483,7 +490,7 @@ function Stepper({
           type="button"
           tabIndex={-1}
           onClick={() => onChange(clamp(value - step))}
-          aria-label="Decrease"
+          aria-label={t("Decrease")}
         >
           <svg width="8" height="5" viewBox="0 0 8 5" fill="none">
             <path
@@ -584,11 +591,12 @@ function set<K extends keyof Settings>(key: K, value: Settings[K]) {
 }
 
 function UiFontSizeField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="UI font size"
-      hint={`Sidebar, tab bar, status bar. ${SETTINGS_LIMITS.uiFontSize.min}–${SETTINGS_LIMITS.uiFontSize.max} px.`}
+      label={t("UI font size")}
+      hint={`${t("Sidebar, tab bar, status bar.")} ${SETTINGS_LIMITS.uiFontSize.min}–${SETTINGS_LIMITS.uiFontSize.max} px.`}
       section={section}
     >
       <Stepper
@@ -603,13 +611,19 @@ function UiFontSizeField({ section }: { section?: string } = {}) {
   );
 }
 
+function LanguageField() {
+  const { language, t } = useI18n();
+  return <FieldRow label={t("Language")}><select className="sb-select__native" aria-label={t("Language")} value={language} onChange={(event) => { void useAppStore.getState().updateSettings({ language: event.target.value === "en" ? "en" : "zh-CN" }); }}><option value="zh-CN">简体中文</option><option value="en">{t("English")}</option></select></FieldRow>;
+}
+
 function CheckForUpdatesField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Check for updates on startup"
+      label={t("Check for updates on startup")}
       align="top"
-      hint="Pings GitHub Releases at most once per day. A clickable badge appears in the status bar when a newer version exists."
+      hint={t("Pings GitHub Releases at most once per day. A clickable badge appears in the status bar when a newer version exists.")}
       section={section}
     >
       <Toggle2
@@ -621,6 +635,7 @@ function CheckForUpdatesField({ section }: { section?: string } = {}) {
 }
 
 function TerminalFontField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   const isCustom = !FONT_PRESETS.some(
     (p) => p.value === settings.terminalFontFamily,
@@ -633,8 +648,8 @@ function TerminalFontField({ section }: { section?: string } = {}) {
   return (
     <>
       <FieldRow
-        label="Font"
-        hint="Powerline-aware fonts (Meslo, FiraCode, Hack NF) render Starship glyphs correctly."
+        label={t("Font")}
+        hint={t("Powerline-aware fonts (Meslo, FiraCode, Hack NF) render Starship glyphs correctly.")}
         section={section}
       >
         <SelectInput
@@ -649,10 +664,10 @@ function TerminalFontField({ section }: { section?: string } = {}) {
         />
       </FieldRow>
       {isCustom && (
-        <FieldRow label="Custom font-family" section={section}>
+        <FieldRow label={t("Custom font-family")} section={section}>
           <TextInput
             value={settings.terminalFontFamily}
-            placeholder='e.g. "Fira Code", monospace'
+            placeholder={t("e.g. \"Fira Code\", monospace")}
             mono
             onChange={(v) => set("terminalFontFamily", v)}
             style={{ width: 240 }}
@@ -664,10 +679,11 @@ function TerminalFontField({ section }: { section?: string } = {}) {
 }
 
 function TerminalFontSizeField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Font size"
+      label={t("Font size")}
       hint={`${SETTINGS_LIMITS.terminalFontSize.min}–${SETTINGS_LIMITS.terminalFontSize.max} px.`}
       section={section}
     >
@@ -684,11 +700,12 @@ function TerminalFontSizeField({ section }: { section?: string } = {}) {
 }
 
 function ScrollbackField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Scrollback"
-      hint={`${SETTINGS_LIMITS.scrollback.min.toLocaleString()}–${SETTINGS_LIMITS.scrollback.max.toLocaleString()} lines. Larger buffers use more RAM.`}
+      label={t("Scrollback")}
+      hint={`${SETTINGS_LIMITS.scrollback.min.toLocaleString()}–${SETTINGS_LIMITS.scrollback.max.toLocaleString()} ${t("lines. Larger buffers use more RAM.")}`}
       section={section}
     >
       <Stepper
@@ -704,12 +721,13 @@ function ScrollbackField({ section }: { section?: string } = {}) {
 }
 
 function PersistScrollbackField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Persist scrollback across restarts"
+      label={t("Persist scrollback across restarts")}
       align="top"
-      hint="Snapshots each terminal’s scrollback to buffers.json so restored sessions show prior output. Off keeps disk writes lighter and avoids retaining sensitive output between launches; existing snapshots are wiped when you turn it off."
+      hint={t("Snapshots each terminal’s scrollback to buffers.json so restored sessions show prior output. Off keeps disk writes lighter and avoids retaining sensitive output between launches; existing snapshots are wiped when you turn it off.")}
       section={section}
     >
       <Toggle2
@@ -721,12 +739,13 @@ function PersistScrollbackField({ section }: { section?: string } = {}) {
 }
 
 function ShowPanelHeaderField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Show panel header"
+      label={t("Show panel header")}
       align="top"
-      hint="Thin header above each terminal split showing shell + cwd. Turn off for absolute-minimum chrome."
+      hint={t("Thin header above each terminal split showing shell + cwd. Turn off for absolute-minimum chrome.")}
       section={section}
     >
       <Toggle2
@@ -738,12 +757,13 @@ function ShowPanelHeaderField({ section }: { section?: string } = {}) {
 }
 
 function ShowGroupCountField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Show group project count"
+      label={t("Show group project count")}
       align="top"
-      hint="Small badge next to each group header in the sidebar showing how many projects it contains."
+      hint={t("Small badge next to each group header in the sidebar showing how many projects it contains.")}
       section={section}
     >
       <Toggle2
@@ -755,12 +775,13 @@ function ShowGroupCountField({ section }: { section?: string } = {}) {
 }
 
 function ConfirmCloseSplitTabField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Confirm before closing a split tab"
+      label={t("Confirm before closing a split tab")}
       align="top"
-      hint="Ask before closing a tab that contains multiple terminals (a split). Single-terminal tabs always close immediately."
+      hint={t("Ask before closing a tab that contains multiple terminals (a split). Single-terminal tabs always close immediately.")}
       section={section}
     >
       <Toggle2
@@ -772,12 +793,13 @@ function ConfirmCloseSplitTabField({ section }: { section?: string } = {}) {
 }
 
 function ConfirmBeforeQuittingField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Confirm before quitting"
+      label={t("Confirm before quitting")}
       align="top"
-      hint="Ask for confirmation before the app quits (Cmd+Q or closing the window)."
+      hint={t("Ask for confirmation before the app quits (Cmd+Q or closing the window).")}
       section={section}
     >
       <Toggle2
@@ -789,12 +811,13 @@ function ConfirmBeforeQuittingField({ section }: { section?: string } = {}) {
 }
 
 function TrackCwdField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Shell integration"
+      label={t("Shell integration")}
       align="top"
-      hint="Injects shell hooks (zsh, bash, fish, nushell): OSC 7 keeps the current directory in sync for session restore, OSC 133 marks prompts and command exits — powering prompt jumping (⌘↑/⌘↓), the failed-command tab dot, and long-command notifications. Affects newly-spawned terminals only."
+      hint={t("Injects shell hooks (zsh, bash, fish, nushell): OSC 7 keeps the current directory in sync for session restore, OSC 133 marks prompts and command exits — powering prompt jumping (⌘↑/⌘↓), the failed-command tab dot, and long-command notifications. Affects newly-spawned terminals only.")}
       section={section}
     >
       <Toggle2
@@ -806,12 +829,13 @@ function TrackCwdField({ section }: { section?: string } = {}) {
 }
 
 function NotifyLongCommandsField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldRow
-      label="Notify when long commands finish"
+      label={t("Notify when long commands finish")}
       align="top"
-      hint="OS notification when a command that ran ≥ 5 s finishes on an inactive tab or while the window is unfocused. Requires shell integration."
+      hint={t("OS notification when a command that ran ≥ 5 s finishes on an inactive tab or while the window is unfocused. Requires shell integration.")}
       section={section}
     >
       <Toggle2
@@ -823,6 +847,7 @@ function NotifyLongCommandsField({ section }: { section?: string } = {}) {
 }
 
 function ThemeField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   const theme = findTheme(settings.terminalTheme).theme;
   const swatches = useMemo(
@@ -842,9 +867,9 @@ function ThemeField({ section }: { section?: string } = {}) {
   );
   return (
     <FieldRow
-      label="Theme"
+      label={t("Theme")}
       align="top"
-      hint="Chrome auto-aligns to the terminal background."
+      hint={t("Chrome auto-aligns to the terminal background.")}
       section={section}
     >
       <div className="settings-theme-control">
@@ -863,12 +888,13 @@ function ThemeField({ section }: { section?: string } = {}) {
 }
 
 function ShellPathField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
-    <FieldStack label="Shell path" section={section}>
+    <FieldStack label={t("Shell path")} section={section}>
       <TextInput
         value={settings.shellPath}
-        placeholder="Default: $SHELL"
+        placeholder={t("Default: $SHELL")}
         mono
         fullWidth
         onChange={(v) => set("shellPath", v)}
@@ -878,23 +904,20 @@ function ShellPathField({ section }: { section?: string } = {}) {
 }
 
 function ShellArgsField({ section }: { section?: string } = {}) {
+  const { t } = useI18n();
   const { settings } = useSettings();
   return (
     <FieldStack
-      label="Shell arguments"
+      label={t("Shell arguments")}
       section={section}
       hint={
         <>
-          Leave both fields empty for automatic handling. When you set your own
-          arguments, ShellBoard stops adding <code>-l</code> automatically —
-          provide it yourself if you want a login shell. Affects newly-spawned
-          terminals only.
-        </>
+          {t("Leave both fields empty for automatic handling. When you set your own arguments, ShellBoard stops adding")}<code>-l</code> {t("automatically — provide it yourself if you want a login shell. Affects newly-spawned terminals only.")}</>
       }
     >
       <TextInput
         value={settings.shellArgs}
-        placeholder="Default: auto (-l for POSIX shells)"
+        placeholder={t("Default: auto (-l for POSIX shells)")}
         mono
         fullWidth
         onChange={(v) => set("shellArgs", v)}
@@ -904,6 +927,7 @@ function ShellArgsField({ section }: { section?: string } = {}) {
 }
 
 function ShortcutsList() {
+  const { t } = useI18n();
   const keybindings = useAppStore((s) => s.settings.keybindings);
   const resolved = useMemo(() => resolveBindings(keybindings), [keybindings]);
 
@@ -962,15 +986,13 @@ function ShortcutsList() {
         );
       })}
       <p className="shortcuts-edit__note">
-        Tab numbers (<kbd className="kbd">Cmd/Ctrl+1…9</kbd>) and the command
-        palette alias (<kbd className="kbd">Cmd/Ctrl+Shift+P</kbd>) are fixed.
-        Copy/paste and link-click live in the terminal itself.
-      </p>
+        {t("Tab numbers (")}<kbd className="kbd">{t("Cmd/Ctrl+1…9")}</kbd>{t(") and the command palette alias (")}<kbd className="kbd">{t("Cmd/Ctrl+Shift+P")}</kbd>{t(") are fixed. Copy/paste and link-click live in the terminal itself.")}</p>
     </div>
   );
 }
 
 function AboutPane() {
+  const { t } = useI18n();
   const [info, setInfo] = useState<{
     name: string;
     version: string;
@@ -995,37 +1017,32 @@ function AboutPane() {
     <div className="about-pane">
       <img src="/logo.png" alt="" className="about-pane__logo" />
       <div className="about-pane__name">{info?.name ?? "Shellboard"}</div>
-      <div className="about-pane__version">Version {info?.version ?? "…"}</div>
+      <div className="about-pane__version">{t("Version")}{info?.version ?? "…"}</div>
       <p className="about-pane__tagline">
-        Cross-platform terminal with per-project tabs &amp; splits.
-      </p>
+        {t("Cross-platform terminal with per-project tabs &amp; splits.")}</p>
       <p className="about-pane__meta">
-        Built with Tauri {info?.tauri ?? "…"} · React · xterm.js · portable-pty
-      </p>
+        {t("Built with Tauri")}{info?.tauri ?? "…"} {t("· React · xterm.js · portable-pty")}</p>
       <div className="about-pane__links">
         <a
           href="https://github.com/petrhlozek/shellboard"
           target="_blank"
           rel="noreferrer"
         >
-          GitHub repo
-        </a>
+          {t("GitHub repo")}</a>
         <span className="about-pane__sep">·</span>
         <a
           href="https://github.com/petrhlozek/shellboard/blob/main/CHANGELOG.md"
           target="_blank"
           rel="noreferrer"
         >
-          Changelog
-        </a>
+          {t("Changelog")}</a>
         <span className="about-pane__sep">·</span>
         <a
           href="https://github.com/petrhlozek/shellboard/issues/new"
           target="_blank"
           rel="noreferrer"
         >
-          Report an issue
-        </a>
+          {t("Report an issue")}</a>
       </div>
     </div>
   );
@@ -1186,12 +1203,14 @@ function SearchResults({
   query: string;
   onJump: (id: SectionId) => void;
 }) {
+  const { t } = useI18n();
   const q = query.trim().toLowerCase();
   const hits = SEARCH_INDEX.filter(
     (e) =>
+      t(e.label).toLowerCase().includes(q) ||
       e.label.toLowerCase().includes(q) ||
       e.keywords.includes(q) ||
-      e.sectionLabel.toLowerCase().includes(q),
+      t(e.sectionLabel).toLowerCase().includes(q),
   );
   return (
     <>
@@ -1215,7 +1234,7 @@ function SearchResults({
               className="search-result__chip"
               onClick={() => onJump(h.section)}
             >
-              {h.sectionLabel}
+              {t(h.sectionLabel)}
             </button>
             {h.render(h.sectionLabel)}
           </div>

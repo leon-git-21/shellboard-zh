@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useI18n } from "./i18n";
+import { TooltipLayer } from "./components/TooltipLayer";
 import { Sidebar } from "./components/Sidebar";
 import { TopBar } from "./components/TopBar";
 import { TabBar } from "./components/TabBar";
@@ -84,6 +86,8 @@ function mixHex(a: string, b: string, tWeight: number): string {
 }
 
 function App() {
+  const { t, language } = useI18n();
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
   const activeProjectId = useAppStore((s) => s.activeProjectId);
   const projectCount = useAppStore((s) => s.projects.length);
   const uiFontSize = useAppStore((s) => s.settings.uiFontSize);
@@ -434,7 +438,7 @@ function App() {
   // changes then). The push is deduped so re-renders don't rebuild the menu.
   useEffect(() => {
     pushMenuShortcuts();
-  }, [keybindings]);
+  }, [keybindings, language]);
 
   const pendingCloseTab = pendingCloseTabId
     ? tabs.find((t) => t.id === pendingCloseTabId) ?? null
@@ -531,8 +535,8 @@ function App() {
       />
       <ConfirmDialog
         open={!!pendingCloseTab}
-        title="Close tab?"
-        message={`This tab contains ${pendingCloseCount} terminal${pendingCloseCount === 1 ? "" : "s"}. Closing it will end all of them.`}
+        title={t("Close tab?")}
+        message={language === "zh-CN" ? `此页签包含 ${pendingCloseCount} 个终端，关闭后会停止这些终端。` : `This tab contains ${pendingCloseCount} terminal${pendingCloseCount === 1 ? "" : "s"}. Closing it will end all of them.`}
         confirmLabel="Close tab"
         cancelLabel="Cancel"
         destructive
@@ -541,8 +545,8 @@ function App() {
       />
       <ConfirmDialog
         open={!!pendingCullTabIds && pendingCullTabIds.length > 0}
-        title="Close idle terminals?"
-        message={`This closes ${pendingCullTabIds?.length ?? 0} terminal${(pendingCullTabIds?.length ?? 0) === 1 ? "" : "s"} running only an idle shell. Their scrollback will be lost. The active tab is kept.`}
+        title={t("Close idle terminals?")}
+        message={language === "zh-CN" ? `关闭 ${pendingCullTabIds?.length ?? 0} 个空闲终端并清除其历史输出，保留当前页签。` : `This closes ${pendingCullTabIds?.length ?? 0} terminal${(pendingCullTabIds?.length ?? 0) === 1 ? "" : "s"} running only an idle shell. Their scrollback will be lost. The active tab is kept.`}
         confirmLabel="Close idle"
         cancelLabel="Cancel"
         destructive
@@ -551,7 +555,7 @@ function App() {
       />
       <ConfirmDialog
         open={pendingQuit}
-        title="Quit Shellboard?"
+        title={t("Quit Shellboard?")}
         message="This will close all open terminals."
         confirmLabel="Quit"
         cancelLabel="Cancel"
@@ -561,6 +565,7 @@ function App() {
       />
       <RecentSwitcher />
       <ErrorToast />
+      <TooltipLayer />
     </div>
   );
 }

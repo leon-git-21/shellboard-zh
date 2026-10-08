@@ -1,4 +1,43 @@
-# Shellboard
+# Shellboard 中文增强版
+
+[calmbit-sro/shellboard](https://github.com/calmbit-sro/shellboard) 的非官方中文增强 fork，保留上游作者信息与 Git 历史。
+
+当前版本：**2.4.1-local.2**。使用 Tauri 2、React 和 xterm.js，面向按项目管理终端与常用命令的工作流。
+
+## 本地定制版
+
+本分支基于上游 `v2.4.1`，版本为 `2.4.1-local.2`。
+
+- 设置 → 常规 → 界面语言，支持简体中文与 English；语言选择保存在本机。
+- 顶部统一放置项目标题、预设命令下拉框和运行按钮；左侧只保留项目导航，第二行只展示终端页签与搜索、分屏工具。每次运行在该项目目录创建新终端页签，页签使用命令名称。
+- 顶部标题使用 16px 字号，命令与页签使用 13px 字号；收起侧栏后仍可运行命令，多页签横向滚动时工具按钮保持可见。
+- 图标按钮提供悬停和键盘聚焦提示，Windows 原生标题栏同步深浅色主题。
+- PTY 输出等待前端完成订阅后再发送，保留 Windows ConPTY 的启动握手，并限制队列容量。
+
+`npm run tauri dev` 启动开发版；`npm run tauri build -- --no-bundle` 生成 Windows 单文件程序 `src-tauri/target/release/shellboard-local.exe`。
+
+定制版应用标识为 `local.shellboard.custom`，配置与上游试用版分开保存。项目、命令与语言保存于系统应用配置目录内的 `shellboard.json`。配置保留磁盘上的项目路径，重启后恢复终端布局并创建新的 Shell，不自动重新执行预设命令。
+
+## 从源码运行
+
+使用 Node.js 22、Rust 稳定工具链和当前系统所需的 [Tauri 开发依赖](https://v2.tauri.app/start/prerequisites/)。Windows 还需要 Microsoft C++ 构建工具及 WebView2 Runtime。
+
+```powershell
+git clone https://github.com/leon-git-21/shellboard-zh.git
+cd shellboard-zh
+npm ci
+npm run tauri dev
+```
+
+`npm run build` 检查 TypeScript 并构建前端；`cargo test --lib --manifest-path src-tauri/Cargo.toml` 运行 Rust 单元测试。当前定制版已在 Windows 上验证，其他平台尚未验证。
+
+## 来源与许可
+
+本 fork 基于上游 `v2.4.1`（`67347ea4ef760f47e401a3d0ddc6654ecb164d80`）。该版本未附 `LICENSE` 文件，本仓库也未代替原作者添加开源许可证。公开源码不等于额外授予使用或再分发权利；GitHub 平台内的查看与 fork 参见 [GitHub 说明](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)。
+
+## 上游说明
+
+以下保留原项目与作者的信息。
 
 Cross-platform terminal emulator built with **Tauri 2**, **React 19 + TypeScript**, **xterm.js**, and a Rust PTY backend (`portable-pty`).
 

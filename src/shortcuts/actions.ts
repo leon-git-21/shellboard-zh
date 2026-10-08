@@ -25,6 +25,7 @@ import { nearestPromptLine } from "../utils/promptMarks";
 import { randomProjectColor } from "../components/ColorPicker";
 import { bindingToAccelerator, formatBinding } from "./binding";
 import { resolveBindings, SHORTCUT_ACTIONS } from "./registry";
+import { nativeMenuLabels } from "../i18n";
 
 // Last shortcuts payload sent to the native menu — skip redundant rebuilds.
 let lastPushedShortcuts = "";
@@ -48,10 +49,11 @@ export function pushMenuShortcuts(): void {
       };
     }
   }
-  const json = JSON.stringify(shortcuts);
+  const labels = nativeMenuLabels(useAppStore.getState().settings.language);
+  const json = JSON.stringify({ shortcuts, labels });
   if (json === lastPushedShortcuts) return;
   lastPushedShortcuts = json;
-  void invoke("set_menu_shortcuts", { shortcuts }).catch(() => {
+  void invoke("set_menu_shortcuts", { shortcuts, labels }).catch(() => {
     /* off-Tauri or menu unavailable — ignore */
   });
 }

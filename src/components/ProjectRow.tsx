@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -49,6 +50,7 @@ export function ProjectRow({
   onCommitRename,
   onCancelRename,
 }: ProjectRowProps) {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [draft, setDraft] = useState(project.name);
 
@@ -103,7 +105,7 @@ export function ProjectRow({
         e.preventDefault();
         onContextMenu(e.clientX, e.clientY);
       }}
-      title={project.path}
+      data-tooltip={project.path}
     >
       <span className="project-row__dot" aria-hidden />
       {editing ? (
@@ -137,7 +139,7 @@ export function ProjectRow({
             {renderHighlighted(displayName, highlight)}
           </span>
           {hasActivity && (
-            <span className="project-row__activity" aria-label="Activity" />
+            <span className="project-row__activity" aria-label={t("Activity")} />
           )}
         </>
       )}

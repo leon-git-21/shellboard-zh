@@ -1,3 +1,4 @@
+import { useI18n } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../store/appStore";
@@ -30,6 +31,7 @@ export function AddProjectFlow({
   onClose,
   initialGroupId = null,
 }: AddProjectFlowProps) {
+  const { t } = useI18n();
   const addProject = useAppStore((s) => s.addProject);
   const groups = useAppStore((s) => s.groups);
   const projects = useAppStore((s) => s.projects);
@@ -49,7 +51,7 @@ export function AddProjectFlow({
         const picked = await openDialog({
           directory: true,
           multiple: false,
-          title: "Select project folder",
+          title: t("Select project folder"),
         });
         if (!picked || typeof picked !== "string") {
           onClose();
@@ -100,17 +102,17 @@ export function AddProjectFlow({
   }
 
   return (
-    <Modal open={open && draft !== null} onClose={handleClose} title="New project">
+    <Modal open={open && draft !== null} onClose={handleClose} title={t("New project")}>
       {draft && (
         <div className="add-project">
           <div className="add-project__field">
-            <label>Path</label>
-            <div className="add-project__path" title={draft.path}>
+            <label>{t("Path")}</label>
+            <div className="add-project__path" data-tooltip={draft.path}>
               {draft.path}
             </div>
           </div>
           <div className="add-project__field">
-            <label htmlFor="project-name-input">Name</label>
+            <label htmlFor="project-name-input">{t("Name")}</label>
             <input
               id="project-name-input"
               className="add-project__input"
@@ -127,7 +129,7 @@ export function AddProjectFlow({
           </div>
           {groups.length > 0 && (
             <div className="add-project__field">
-              <label htmlFor="project-group-select">Group</label>
+              <label htmlFor="project-group-select">{t("Group")}</label>
               <select
                 id="project-group-select"
                 className="add-project__input"
@@ -139,7 +141,7 @@ export function AddProjectFlow({
                   })
                 }
               >
-                <option value="">No group</option>
+                <option value="">{t("No group")}</option>
                 {groups.map((g) => (
                   <option key={g.id} value={g.id}>
                     {g.name}
@@ -149,7 +151,7 @@ export function AddProjectFlow({
             </div>
           )}
           <div className="add-project__field">
-            <label>Color</label>
+            <label>{t("Color")}</label>
             <ColorPicker
               value={draft.color}
               onChange={(color) => setDraft({ ...draft, color })}
@@ -157,16 +159,14 @@ export function AddProjectFlow({
           </div>
           <div className="add-project__actions">
             <button type="button" onClick={handleClose}>
-              Cancel
-            </button>
+              {t("Cancel")}</button>
             <button
               type="button"
               className="add-project__primary"
               onClick={() => void commit()}
               disabled={saving || !draft.name.trim()}
             >
-              Add
-            </button>
+              {t("Add")}</button>
           </div>
         </div>
       )}
